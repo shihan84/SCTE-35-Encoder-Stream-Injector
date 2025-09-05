@@ -27,7 +27,40 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/scte35-tools">
+              <CardHeader>
+                <div className="flex items-center space-x-2">
+                  <Settings className="w-6 h-6 text-orange-600" />
+                  <CardTitle>SCTE-35 Tools</CardTitle>
+                </div>
+                <CardDescription>
+                  Professional tools for conversion, analysis, and FFmpeg integration
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Data Converter</span>
+                    <Badge variant="outline">Multi-format</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">FFmpeg Builder</span>
+                    <Badge variant="outline">Advanced</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Analyzer</span>
+                    <Badge variant="outline">Detailed</Badge>
+                  </div>
+                  <Button className="w-full mt-4">
+                    Open Tools
+                  </Button>
+                </div>
+              </CardContent>
+            </Link>
+          </Card>
+
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <Link href="/encoder">
               <CardHeader>
@@ -134,7 +167,7 @@ export default function Home() {
             <CardDescription>Comprehensive SCTE-35 solution for professional broadcasting</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="text-center space-y-2">
                 <Settings className="w-8 h-8 mx-auto text-blue-600" />
                 <h3 className="font-semibold">Easy Configuration</h3>
@@ -161,6 +194,13 @@ export default function Home() {
                 <h3 className="font-semibold">Multi-Protocol</h3>
                 <p className="text-sm text-muted-foreground">
                   Support for SRT, HLS, DASH, and RTMP
+                </p>
+              </div>
+              <div className="text-center space-y-2">
+                <Settings className="w-8 h-8 mx-auto text-orange-600" />
+                <h3 className="font-semibold">Distributor Ready</h3>
+                <p className="text-sm text-muted-foreground">
+                  Full compliance with distributor specifications
                 </p>
               </div>
             </div>

@@ -38,17 +38,26 @@ interface TimeSignal {
   pts: number;
 }
 
+interface DistributorConfig {
+  scteDataPid: number;
+  nullPid: number;
+  adDuration: number;
+  preRollDuration: number;
+  cueType: 'CUE-OUT' | 'CUE-IN' | 'CRASH-OUT';
+}
+
 interface EncodeRequest {
   spliceInfo: SpliceInfoSection;
   command: SpliceInsert | TimeSignal;
   commandType: string;
+  distributorConfig?: DistributorConfig;
 }
 
 class SCTE35Encoder {
   private static readonly THIRTY_TWO_BIT_MULTIPLIER = 4294967296;
 
   static encode(request: EncodeRequest): { base64: string; hex: string } {
-    const { spliceInfo, command, commandType } = request;
+    const { spliceInfo, command, commandType, distributorConfig } = request;
     
     // Create a buffer to hold the encoded data
     const buffer: number[] = [];
@@ -60,10 +69,10 @@ class SCTE35Encoder {
     const commandStartIndex = buffer.length;
     switch (commandType) {
       case "splice-insert":
-        this.encodeSpliceInsert(buffer, command as SpliceInsert);
+        this.encodeSpliceInsert(buffer, command as SpliceInsert, distributorConfig);
         break;
       case "time-signal":
-        this.encodeTimeSignal(buffer, command as TimeSignal);
+        this.encodeTimeSignal(buffer, command as TimeSignal, distributorConfig);
         break;
       default:
         throw new Error(`Unsupported command type: ${commandType}`);
@@ -134,7 +143,7 @@ class SCTE35Encoder {
     buffer.push(0);
   }
 
-  private static encodeSpliceInsert(buffer: number[], command: SpliceInsert): void {
+  private static encodeSpliceInsert(buffer: number[], command: SpliceInsert, distributorConfig?: DistributorConfig): void {
     // Splice event ID (32 bits)
     this.writeUint32(buffer, command.spliceEventId);
     
@@ -161,7 +170,9 @@ class SCTE35Encoder {
     
     // Break duration (if duration flag)
     if (command.durationFlag) {
-      this.encodeBreakDuration(buffer, command.breakDurationAutoReturn, command.breakDuration);
+      // Use distributor ad duration if provided, otherwise use command duration
+      const duration = distributorConfig?.adDuration || command.breakDuration;
+      this.encodeBreakDuration(buffer, command.breakDurationAutoReturn, duration);
     }
     
     // Unique program ID (16 bits)
@@ -174,8 +185,13 @@ class SCTE35Encoder {
     buffer.push(command.expected);
   }
 
-  private static encodeTimeSignal(buffer: number[], command: TimeSignal): void {
+  private static encodeTimeSignal(buffer: number[], command: TimeSignal, distributorConfig?: DistributorConfig): void {
     this.encodeSpliceTime(buffer, command.timeSpecified, command.pts);
+    
+    // Add distributor-specific descriptors if provided
+    if (distributorConfig) {
+      this.encodeDistributorDescriptors(buffer, distributorConfig);
+    }
   }
 
   private static encodeSpliceTime(buffer: number[], specified: boolean, pts: number): void {
@@ -199,6 +215,50 @@ class SCTE35Encoder {
     
     // Duration (32 bits)
     this.writeUint32(buffer, duration & 0xffffffff);
+  }
+
+  private static encodeDistributorDescriptors(buffer: number[], config: DistributorConfig): void {
+    // Encode Avail Descriptor for distributor requirements
+    const availDescriptor = {
+      tag: 0, // Avail Descriptor tag
+      data: this.encodeAvailDescriptorData(config)
+    };
+    this.encodeDescriptor(buffer, availDescriptor);
+    
+    // Encode Time Descriptor for ad duration
+    if (config.adDuration > 0) {
+      const timeDescriptor = {
+        tag: 2, // Time Descriptor tag
+        data: this.encodeTimeDescriptorData(config.adDuration)
+      };
+      this.encodeDescriptor(buffer, timeDescriptor);
+    }
+  }
+
+  private static encodeAvailDescriptorData(config: DistributorConfig): string {
+    // Create avail descriptor data based on cue type
+    const data = [];
+    
+    // Provider avail ID (32 bits) - using SCTE PID as identifier
+    this.writeUint32(data, config.scteDataPid);
+    
+    // Avail identifier (32 bits) - using event ID
+    this.writeUint32(data, config.scteDataPid);
+    
+    // Convert to hex string
+    return data.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  private static encodeTimeDescriptorData(duration: number): string {
+    // Create time descriptor data for ad duration
+    const data = [];
+    
+    // Duration in 90kHz clock units
+    const duration90k = duration * 90000;
+    this.writeUint32(data, duration90k);
+    
+    // Convert to hex string
+    return data.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
   private static encodeDescriptor(buffer: number[], descriptor: { tag: number; data: string }): void {
@@ -283,10 +343,58 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate distributor configuration if provided
+    if (body.distributorConfig) {
+      const config = body.distributorConfig;
+      
+      if (config.scteDataPid !== 500) {
+        return NextResponse.json(
+          { error: "SCTE Data PID must be 500" },
+          { status: 400 }
+        );
+      }
+      
+      if (config.nullPid !== 8191) {
+        return NextResponse.json(
+          { error: "Null PID must be 8191" },
+          { status: 400 }
+        );
+      }
+      
+      if (config.adDuration <= 0) {
+        return NextResponse.json(
+          { error: "Ad duration must be greater than 0" },
+          { status: 400 }
+        );
+      }
+      
+      if (config.preRollDuration < 0 || config.preRollDuration > 10) {
+        return NextResponse.json(
+          { error: "Pre-roll duration must be between 0-10 seconds" },
+          { status: 400 }
+        );
+      }
+      
+      if (!['CUE-OUT', 'CUE-IN', 'CRASH-OUT'].includes(config.cueType)) {
+        return NextResponse.json(
+          { error: "Cue type must be CUE-OUT, CUE-IN, or CRASH-OUT" },
+          { status: 400 }
+        );
+      }
+    }
+
     // Encode SCTE-35 data
     const result = SCTE35Encoder.encode(body);
     
-    return NextResponse.json(result);
+    // Add distributor-specific information to response
+    const response = {
+      ...result,
+      distributorConfig: body.distributorConfig,
+      timestamp: new Date().toISOString(),
+      encoding: 'SCTE-35'
+    };
+    
+    return NextResponse.json(response);
   } catch (error) {
     console.error("SCTE-35 encoding error:", error);
     return NextResponse.json(

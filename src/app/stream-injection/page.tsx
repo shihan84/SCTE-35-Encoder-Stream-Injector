@@ -13,14 +13,40 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Play, Pause, Square, Settings, Monitor, Copy, Download, ArrowLeft } from "lucide-react";
+import FFmpegCommandBuilder from "@/components/ffmpeg-command-builder";
 
 interface StreamConfig {
   inputUrl: string;
   outputUrl: string;
   streamType: 'srt' | 'hls' | 'dash' | 'rtmp';
-  bitrate: number;
-  resolution: string;
-  codec: string;
+  
+  // Distributor Requirements
+  streamName: string;
+  videoResolution: string;
+  videoCodec: string;
+  pcr: string;
+  profileLevel: string;
+  gop: number;
+  bFrames: number;
+  videoBitrate: number;
+  chroma: string;
+  aspectRatio: string;
+  audioCodec: string;
+  audioBitrate: number;
+  audioLKFS: number;
+  audioSamplingRate: number;
+  scteDataPid: number;
+  nullPid: number;
+  latency: number;
+  
+  // SCTE-35 Event Configuration
+  adDuration: number;
+  scteEventId: number;
+  scteStartCommand: string;
+  scteStopCommand: string;
+  crashOutCommand: string;
+  preRollDuration: number;
+  scteDataPidValue: number;
 }
 
 interface InjectionPoint {
@@ -47,9 +73,34 @@ export default function StreamInjection() {
     inputUrl: "",
     outputUrl: "",
     streamType: "srt",
-    bitrate: 5000,
-    resolution: "1920x1080",
-    codec: "h264"
+    
+    // Distributor Requirements - Default Values
+    streamName: "Live_Service",
+    videoResolution: "1920x1080",
+    videoCodec: "h264",
+    pcr: "Video Embedded",
+    profileLevel: "High@Auto",
+    gop: 12,
+    bFrames: 5,
+    videoBitrate: 5000,
+    chroma: "4:2:0",
+    aspectRatio: "16:9",
+    audioCodec: "AAC-LC",
+    audioBitrate: 128,
+    audioLKFS: -20,
+    audioSamplingRate: 48000,
+    scteDataPid: 500,
+    nullPid: 8191,
+    latency: 2000,
+    
+    // SCTE-35 Event Configuration
+    adDuration: 600,
+    scteEventId: 100023,
+    scteStartCommand: "CUE-OUT",
+    scteStopCommand: "CUE-IN",
+    crashOutCommand: "CUE-IN",
+    preRollDuration: 0,
+    scteDataPidValue: 500
   });
 
   const [injectionPoints, setInjectionPoints] = useState<InjectionPoint[]>([]);
@@ -257,6 +308,17 @@ export default function StreamInjection() {
                   <CardDescription>Configure input and output streams</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Stream Identification */}
+                  <div>
+                    <Label htmlFor="streamName">Stream Name</Label>
+                    <Input
+                      id="streamName"
+                      value={streamConfig.streamName}
+                      onChange={(e) => setStreamConfig(prev => ({ ...prev, streamName: e.target.value }))}
+                      placeholder="Live_Service"
+                    />
+                  </div>
+
                   <div>
                     <Label htmlFor="streamType">Stream Type</Label>
                     <Select value={streamConfig.streamType} onValueChange={(value: any) => setStreamConfig(prev => ({ ...prev, streamType: value }))}>
@@ -292,44 +354,331 @@ export default function StreamInjection() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="bitrate">Bitrate (kbps)</Label>
-                      <Input
-                        id="bitrate"
-                        type="number"
-                        value={streamConfig.bitrate}
-                        onChange={(e) => setStreamConfig(prev => ({ ...prev, bitrate: parseInt(e.target.value) }))}
-                      />
+                  {/* Video Specifications */}
+                  <div className="space-y-4 border-t pt-4">
+                    <h4 className="font-semibold text-lg">Video Specifications</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="videoResolution">Video Resolution</Label>
+                        <Select value={streamConfig.videoResolution} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, videoResolution: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1920x1080">1920x1080 (HD)</SelectItem>
+                            <SelectItem value="1280x720">1280x720 (HD)</SelectItem>
+                            <SelectItem value="3840x2160">3840x2160 (4K)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="videoCodec">Video Codec</Label>
+                        <Select value={streamConfig.videoCodec} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, videoCodec: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="h264">H.264</SelectItem>
+                            <SelectItem value="h265">H.265</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="pcr">PCR</Label>
+                        <Select value={streamConfig.pcr} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, pcr: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Video Embedded">Video Embedded</SelectItem>
+                            <SelectItem value="Audio Embedded">Audio Embedded</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="profileLevel">Profile@Level</Label>
+                        <Select value={streamConfig.profileLevel} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, profileLevel: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="High@Auto">High@Auto</SelectItem>
+                            <SelectItem value="High@L4.0">High@L4.0</SelectItem>
+                            <SelectItem value="High@L4.1">High@L4.1</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="gop">GOP</Label>
+                        <Input
+                          id="gop"
+                          type="number"
+                          value={streamConfig.gop}
+                          onChange={(e) => setStreamConfig(prev => ({ ...prev, gop: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="bFrames">No of B Frames</Label>
+                        <Input
+                          id="bFrames"
+                          type="number"
+                          value={streamConfig.bFrames}
+                          onChange={(e) => setStreamConfig(prev => ({ ...prev, bFrames: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="videoBitrate">Video Bitrate (kbps)</Label>
+                        <Input
+                          id="videoBitrate"
+                          type="number"
+                          value={streamConfig.videoBitrate}
+                          onChange={(e) => setStreamConfig(prev => ({ ...prev, videoBitrate: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="chroma">Chroma</Label>
+                        <Select value={streamConfig.chroma} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, chroma: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="4:2:0">4:2:0</SelectItem>
+                            <SelectItem value="4:2:2">4:2:2</SelectItem>
+                            <SelectItem value="4:4:4">4:4:4</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
                     <div>
-                      <Label htmlFor="resolution">Resolution</Label>
-                      <Select value={streamConfig.resolution} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, resolution: value }))}>
+                      <Label htmlFor="aspectRatio">Aspect Ratio</Label>
+                      <Select value={streamConfig.aspectRatio} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, aspectRatio: value }))}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1920x1080">1920x1080 (1080p)</SelectItem>
-                          <SelectItem value="1280x720">1280x720 (720p)</SelectItem>
-                          <SelectItem value="854x480">854x480 (480p)</SelectItem>
-                          <SelectItem value="640x360">640x360 (360p)</SelectItem>
+                          <SelectItem value="16:9">16:9</SelectItem>
+                          <SelectItem value="4:3">4:3</SelectItem>
+                          <SelectItem value="1:1">1:1</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="codec">Codec</Label>
-                    <Select value={streamConfig.codec} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, codec: value }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="h264">H.264</SelectItem>
-                        <SelectItem value="h265">H.265</SelectItem>
-                        <SelectItem value="av1">AV1</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  {/* Audio Specifications */}
+                  <div className="space-y-4 border-t pt-4">
+                    <h4 className="font-semibold text-lg">Audio Specifications</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="audioCodec">Audio Codec</Label>
+                        <Select value={streamConfig.audioCodec} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, audioCodec: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="AAC-LC">AAC-LC</SelectItem>
+                            <SelectItem value="AAC-HE">AAC-HE</SelectItem>
+                            <SelectItem value="MP3">MP3</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="audioBitrate">Audio Bitrate (kbps)</Label>
+                        <Input
+                          id="audioBitrate"
+                          type="number"
+                          value={streamConfig.audioBitrate}
+                          onChange={(e) => setStreamConfig(prev => ({ ...prev, audioBitrate: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="audioLKFS">Audio LKFS</Label>
+                        <Input
+                          id="audioLKFS"
+                          type="number"
+                          value={streamConfig.audioLKFS}
+                          onChange={(e) => setStreamConfig(prev => ({ ...prev, audioLKFS: parseInt(e.target.value) }))}
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {streamConfig.audioLKFS} dB
+                        </p>
+                      </div>
+                      <div>
+                        <Label htmlFor="audioSamplingRate">Audio Sampling Rate</Label>
+                        <Select value={streamConfig.audioSamplingRate.toString()} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, audioSamplingRate: parseInt(value) }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="48000">48 kHz</SelectItem>
+                            <SelectItem value="44100">44.1 kHz</SelectItem>
+                            <SelectItem value="32000">32 kHz</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SCTE-35 Configuration */}
+                  <div className="space-y-4 border-t pt-4">
+                    <h4 className="font-semibold text-lg">SCTE-35 Configuration</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="scteDataPid">SCTE Data PID</Label>
+                        <Input
+                          id="scteDataPid"
+                          type="number"
+                          value={streamConfig.scteDataPid}
+                          onChange={(e) => setStreamConfig(prev => ({ ...prev, scteDataPid: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="nullPid">Null PID</Label>
+                        <Input
+                          id="nullPid"
+                          type="number"
+                          value={streamConfig.nullPid}
+                          onChange={(e) => setStreamConfig(prev => ({ ...prev, nullPid: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="latency">Latency (milliseconds)</Label>
+                      <Input
+                        id="latency"
+                        type="number"
+                        value={streamConfig.latency}
+                        onChange={(e) => setStreamConfig(prev => ({ ...prev, latency: parseInt(e.target.value) }))}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {streamConfig.latency / 1000} seconds
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* SCTE-35 Event Configuration */}
+                  <div className="space-y-4 border-t pt-4">
+                    <h4 className="font-semibold text-lg">SCTE-35 Event Configuration</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="adDuration">Ad Duration (seconds)</Label>
+                        <Input
+                          id="adDuration"
+                          type="number"
+                          value={streamConfig.adDuration}
+                          onChange={(e) => setStreamConfig(prev => ({ ...prev, adDuration: parseInt(e.target.value) }))}
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {Math.floor(streamConfig.adDuration / 60)} minutes {streamConfig.adDuration % 60} seconds
+                        </p>
+                      </div>
+                      <div>
+                        <Label htmlFor="scteEventId">SCTE Event ID</Label>
+                        <Input
+                          id="scteEventId"
+                          type="number"
+                          value={streamConfig.scteEventId}
+                          onChange={(e) => setStreamConfig(prev => ({ ...prev, scteEventId: parseInt(e.target.value) }))}
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Unique ID, increments sequentially
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="scteStartCommand">SCTE START Command</Label>
+                        <Select value={streamConfig.scteStartCommand} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, scteStartCommand: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="CUE-OUT">CUE-OUT</SelectItem>
+                            <SelectItem value="SPLICE_OUT">SPLICE_OUT</SelectItem>
+                            <SelectItem value="BREAK_START">BREAK_START</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Program out point
+                        </p>
+                      </div>
+                      <div>
+                        <Label htmlFor="scteStopCommand">SCTE STOP Command</Label>
+                        <Select value={streamConfig.scteStopCommand} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, scteStopCommand: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="CUE-IN">CUE-IN</SelectItem>
+                            <SelectItem value="SPLICE_IN">SPLICE_IN</SelectItem>
+                            <SelectItem value="BREAK_END">BREAK_END</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Program in point
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="crashOutCommand">Crash Out Command</Label>
+                        <Select value={streamConfig.crashOutCommand} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, crashOutCommand: value }))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="CUE-IN">CUE-IN</SelectItem>
+                            <SelectItem value="SPLICE_IN">SPLICE_IN</SelectItem>
+                            <SelectItem value="BREAK_END">BREAK_END</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Emergency return to program
+                        </p>
+                      </div>
+                      <div>
+                        <Label htmlFor="preRollDuration">Pre-roll Duration (seconds)</Label>
+                        <Input
+                          id="preRollDuration"
+                          type="number"
+                          min="0"
+                          max="10"
+                          value={streamConfig.preRollDuration}
+                          onChange={(e) => setStreamConfig(prev => ({ ...prev, preRollDuration: parseInt(e.target.value) }))}
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Range: 0-10 seconds
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="scteDataPidValue">SCTE Data PID Value</Label>
+                      <Input
+                        id="scteDataPidValue"
+                        type="number"
+                        value={streamConfig.scteDataPidValue}
+                        onChange={(e) => setStreamConfig(prev => ({ ...prev, scteDataPidValue: parseInt(e.target.value) }))}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Must match SCTE Data PID above
+                      </p>
+                    </div>
                   </div>
 
                   <div className="flex space-x-2">
@@ -617,6 +966,8 @@ export default function StreamInjection() {
                 )}
               </CardContent>
             </Card>
+
+            <FFmpegCommandBuilder />
           </TabsContent>
         </Tabs>
       </div>

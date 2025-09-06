@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Copy, Download, Play, ArrowLeft, Settings, Activity, Monitor, Zap, Shield, Database, Network } from "lucide-react";
+import { Copy, Download, Play, ArrowLeft, Settings, Activity, Monitor, Zap, Shield, Database, Network, ChevronDown, ChevronRight, Info, HelpCircle } from "lucide-react";
 import Link from "next/link";
 
 interface SpliceInfoSection {
@@ -52,11 +52,65 @@ interface TimeSignal {
   pts: number;
 }
 
+interface OptionSection {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  expanded: boolean;
+}
+
 export default function Encoder() {
   const [activeTab, setActiveTab] = useState("splice-insert");
   const [encodedOutput, setEncodedOutput] = useState("");
   const [outputFormat, setOutputFormat] = useState<"base64" | "hex">("base64");
   const [isEncoding, setIsEncoding] = useState(false);
+
+  // Option sections state
+  const [sections, setSections] = useState<OptionSection[]>([
+    {
+      id: "splice-info",
+      title: "Splice Info Section",
+      description: "Basic SCTE-35 message configuration",
+      icon: <Database className="w-4 h-4" />,
+      expanded: true
+    },
+    {
+      id: "event-config",
+      title: "Event Configuration",
+      description: "Splice event parameters and timing",
+      icon: <Settings className="w-4 h-4" />,
+      expanded: true
+    },
+    {
+      id: "timing-control",
+      title: "Timing Control",
+      description: "PTS timing and scheduling options",
+      icon: <Activity className="w-4 h-4" />,
+      expanded: true
+    },
+    {
+      id: "duration-settings",
+      title: "Duration Settings",
+      description: "Break duration and auto-return options",
+      icon: <Zap className="w-4 h-4" />,
+      expanded: false
+    },
+    {
+      id: "program-identifiers",
+      title: "Program Identifiers",
+      description: "Program and event identification",
+      icon: <Shield className="w-4 h-4" />,
+      expanded: false
+    },
+    {
+      id: "advanced-options",
+      title: "Advanced Options",
+      description: "Additional configuration and flags",
+      icon: <Settings className="w-4 h-4" />,
+      expanded: false
+    }
+  ]);
 
   // Splice Info Section
   const [spliceInfo, setSpliceInfo] = useState<SpliceInfoSection>({
@@ -95,6 +149,14 @@ export default function Encoder() {
     timeSpecified: true,
     pts: 0
   });
+
+  const toggleSection = (sectionId: string) => {
+    setSections(sections.map(section => 
+      section.id === sectionId 
+        ? { ...section, expanded: !section.expanded }
+        : section
+    ));
+  };
 
   const handleEncode = async () => {
     setIsEncoding(true);
@@ -141,6 +203,347 @@ export default function Encoder() {
     URL.revokeObjectURL(url);
   };
 
+  const renderSection = (section: OptionSection) => {
+    const isExpanded = section.expanded;
+    const chevronIcon = isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />;
+
+    let sectionContent = null;
+
+    switch (section.id) {
+      case "splice-info":
+        sectionContent = (
+          <div className="medialive-form-row">
+            <div className="medialive-form-group">
+              <label className="medialive-form-label">Table ID</label>
+              <input
+                type="number"
+                value={spliceInfo.tableId}
+                onChange={(e) => setSpliceInfo({ ...spliceInfo, tableId: parseInt(e.target.value) })}
+                className="medialive-input"
+              />
+              <div className="flex items-center space-x-1 mt-1">
+                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
+                <span className="text-xs text-[#a0aec0]">Default: 0xFC (SCTE-35)</span>
+              </div>
+            </div>
+            <div className="medialive-form-group">
+              <label className="medialive-form-label">Protocol Version</label>
+              <input
+                type="number"
+                value={spliceInfo.protocolVersion}
+                onChange={(e) => setSpliceInfo({ ...spliceInfo, protocolVersion: parseInt(e.target.value) })}
+                className="medialive-input"
+              />
+              <div className="flex items-center space-x-1 mt-1">
+                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
+                <span className="text-xs text-[#a0aec0]">Default: 0</span>
+              </div>
+            </div>
+            <div className="medialive-form-group">
+              <label className="medialive-form-label">PTS Adjustment</label>
+              <input
+                type="number"
+                value={spliceInfo.ptsAdjustment}
+                onChange={(e) => setSpliceInfo({ ...spliceInfo, ptsAdjustment: parseInt(e.target.value) })}
+                className="medialive-input"
+              />
+              <div className="flex items-center space-x-1 mt-1">
+                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
+                <span className="text-xs text-[#a0aec0]">33-bit PTS adjustment</span>
+              </div>
+            </div>
+            <div className="medialive-form-group">
+              <label className="medialive-form-label">CW Index</label>
+              <input
+                type="number"
+                value={spliceInfo.cwIndex}
+                onChange={(e) => setSpliceInfo({ ...spliceInfo, cwIndex: parseInt(e.target.value) })}
+                className="medialive-input"
+              />
+              <div className="flex items-center space-x-1 mt-1">
+                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
+                <span className="text-xs text-[#a0aec0]">Default: 0xFF</span>
+              </div>
+            </div>
+          </div>
+        );
+        break;
+
+      case "event-config":
+        sectionContent = (
+          <div className="space-y-4">
+            <div className="medialive-form-row">
+              <div className="medialive-form-group">
+                <label className="medialive-form-label">Splice Event ID</label>
+                <input
+                  type="number"
+                  value={spliceInsert.spliceEventId}
+                  onChange={(e) => setSpliceInsert({ ...spliceInsert, spliceEventId: parseInt(e.target.value) })}
+                  className="medialive-input"
+                />
+                <div className="flex items-center space-x-1 mt-1">
+                  <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
+                  <span className="text-xs text-[#a0aec0]">Unique event identifier</span>
+                </div>
+              </div>
+              <div className="medialive-form-group">
+                <label className="medialive-form-label">Event Cancel</label>
+                <div className="flex items-center space-x-2 mt-2">
+                  <input
+                    type="checkbox"
+                    id="spliceEventCancel"
+                    checked={spliceInsert.spliceEventCancelIndicator}
+                    onChange={(e) => setSpliceInsert({ ...spliceInsert, spliceEventCancelIndicator: e.target.checked })}
+                    className="medialive-checkbox"
+                  />
+                  <label htmlFor="spliceEventCancel" className="medialive-form-label">
+                    Cancel this event
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className="medialive-form-row">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="outOfNetwork"
+                  checked={spliceInsert.outOfNetworkIndicator}
+                  onChange={(e) => setSpliceInsert({ ...spliceInsert, outOfNetworkIndicator: e.target.checked })}
+                  className="medialive-checkbox"
+                />
+                <label htmlFor="outOfNetwork" className="medialive-form-label">
+                  Out of Network
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="programSplice"
+                  checked={spliceInsert.programSpliceFlag}
+                  onChange={(e) => setSpliceInsert({ ...spliceInsert, programSpliceFlag: e.target.checked })}
+                  className="medialive-checkbox"
+                />
+                <label htmlFor="programSplice" className="medialive-form-label">
+                  Program Splice
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="spliceImmediate"
+                  checked={spliceInsert.spliceImmediateFlag}
+                  onChange={(e) => setSpliceInsert({ ...spliceInsert, spliceImmediateFlag: e.target.checked })}
+                  className="medialive-checkbox"
+                />
+                <label htmlFor="spliceImmediate" className="medialive-form-label">
+                  Splice Immediate
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="durationFlag"
+                  checked={spliceInsert.durationFlag}
+                  onChange={(e) => setSpliceInsert({ ...spliceInsert, durationFlag: e.target.checked })}
+                  className="medialive-checkbox"
+                />
+                <label htmlFor="durationFlag" className="medialive-form-label">
+                  Duration Flag
+                </label>
+              </div>
+            </div>
+          </div>
+        );
+        break;
+
+      case "timing-control":
+        sectionContent = (
+          <div className="medialive-form-row">
+            <div className="medialive-form-group">
+              <label className="medialive-form-label">Splice Time PTS</label>
+              <input
+                type="number"
+                value={spliceInsert.spliceTimePts}
+                onChange={(e) => setSpliceInsert({ ...spliceInsert, spliceTimePts: parseInt(e.target.value) })}
+                className="medialive-input"
+              />
+              <div className="flex items-center space-x-1 mt-1">
+                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
+                <span className="text-xs text-[#a0aec0]">33-bit presentation timestamp</span>
+              </div>
+            </div>
+            <div className="medialive-form-group">
+              <label className="medialive-form-label">Time Specified</label>
+              <div className="flex items-center space-x-2 mt-2">
+                <Switch
+                  id="timeSpecified"
+                  checked={spliceInsert.spliceTimeSpecified}
+                  onCheckedChange={(checked) => setSpliceInsert({ ...spliceInsert, spliceTimeSpecified: !!checked })}
+                />
+                <label htmlFor="timeSpecified" className="medialive-form-label">
+                  Specify splice time
+                </label>
+              </div>
+            </div>
+          </div>
+        );
+        break;
+
+      case "duration-settings":
+        sectionContent = (
+          <div className="medialive-form-row">
+            <div className="medialive-form-group">
+              <label className="medialive-form-label">Break Duration</label>
+              <input
+                type="number"
+                value={spliceInsert.breakDuration}
+                onChange={(e) => setSpliceInsert({ ...spliceInsert, breakDuration: parseInt(e.target.value) })}
+                className="medialive-input"
+              />
+              <div className="flex items-center space-x-1 mt-1">
+                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
+                <span className="text-xs text-[#a0aec0]">Duration in 90kHz ticks</span>
+              </div>
+            </div>
+            <div className="medialive-form-group">
+              <label className="medialive-form-label">Auto Return</label>
+              <div className="flex items-center space-x-2 mt-2">
+                <input
+                  type="checkbox"
+                  id="autoReturn"
+                  checked={spliceInsert.breakDurationAutoReturn}
+                  onChange={(e) => setSpliceInsert({ ...spliceInsert, breakDurationAutoReturn: e.target.checked })}
+                  className="medialive-checkbox"
+                />
+                <label htmlFor="autoReturn" className="medialive-form-label">
+                  Auto return after break
+                </label>
+              </div>
+            </div>
+          </div>
+        );
+        break;
+
+      case "program-identifiers":
+        sectionContent = (
+          <div className="medialive-form-row">
+            <div className="medialive-form-group">
+              <label className="medialive-form-label">Unique Program ID</label>
+              <input
+                type="number"
+                value={spliceInsert.uniqueProgramId}
+                onChange={(e) => setSpliceInsert({ ...spliceInsert, uniqueProgramId: parseInt(e.target.value) })}
+                className="medialive-input"
+              />
+              <div className="flex items-center space-x-1 mt-1">
+                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
+                <span className="text-xs text-[#a0aec0]">Program identifier</span>
+              </div>
+            </div>
+            <div className="medialive-form-group">
+              <label className="medialive-form-label">Available</label>
+              <input
+                type="number"
+                value={spliceInsert.available}
+                onChange={(e) => setSpliceInsert({ ...spliceInsert, available: parseInt(e.target.value) })}
+                className="medialive-input"
+              />
+              <div className="flex items-center space-x-1 mt-1">
+                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
+                <span className="text-xs text-[#a0aec0]">Available events</span>
+              </div>
+            </div>
+            <div className="medialive-form-group">
+              <label className="medialive-form-label">Expected</label>
+              <input
+                type="number"
+                value={spliceInsert.expected}
+                onChange={(e) => setSpliceInsert({ ...spliceInsert, expected: parseInt(e.target.value) })}
+                className="medialive-input"
+              />
+              <div className="flex items-center space-x-1 mt-1">
+                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
+                <span className="text-xs text-[#a0aec0]">Expected events</span>
+              </div>
+            </div>
+          </div>
+        );
+        break;
+
+      case "advanced-options":
+        sectionContent = (
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="encryptedPacket"
+                checked={spliceInfo.encryptedPacket}
+                onChange={(e) => setSpliceInfo({ ...spliceInfo, encryptedPacket: e.target.checked })}
+                className="medialive-checkbox"
+              />
+              <label htmlFor="encryptedPacket" className="medialive-form-label">
+                Encrypted Packet
+              </label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="selectionSyntax"
+                checked={spliceInfo.selectionSyntaxIndicator}
+                onChange={(e) => setSpliceInfo({ ...spliceInfo, selectionSyntaxIndicator: e.target.checked })}
+                className="medialive-checkbox"
+              />
+              <label htmlFor="selectionSyntax" className="medialive-form-label">
+                Selection Syntax Indicator
+              </label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="privateIndicator"
+                checked={spliceInfo.privateIndicator}
+                onChange={(e) => setSpliceInfo({ ...spliceInfo, privateIndicator: e.target.checked })}
+                className="medialive-checkbox"
+              />
+              <label htmlFor="privateIndicator" className="medialive-form-label">
+                Private Indicator
+              </label>
+            </div>
+          </div>
+        );
+        break;
+    }
+
+    return (
+      <div className="medialive-panel mb-4">
+        <div 
+          className="medialive-panel-header px-4 py-3 rounded-t-lg cursor-pointer hover:bg-[#1a252f] transition-colors"
+          onClick={() => toggleSection(section.id)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="text-[#ff9900]">
+                {section.icon}
+              </div>
+              <div>
+                <h3 className="medialive-panel-title text-sm">{section.title}</h3>
+                <p className="medialive-panel-subtitle text-xs">{section.description}</p>
+              </div>
+            </div>
+            <div className="text-[#a0aec0]">
+              {chevronIcon}
+            </div>
+          </div>
+        </div>
+        {isExpanded && (
+          <div className="medialive-panel-content p-4">
+            {sectionContent}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="medialive-container">
       {/* AWS MediaLive-style Header */}
@@ -180,233 +583,97 @@ export default function Encoder() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Panel - Configuration */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Encoder Configuration Panel */}
+            {/* Command Type Selection */}
             <div className="medialive-panel rounded-lg">
               <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Settings className="w-5 h-5 text-[#ff9900]" />
-                    <h2 className="medialive-panel-title">Encoder Configuration</h2>
+                    <h2 className="medialive-panel-title">Command Type</h2>
                   </div>
-                  <Badge className="medialive-badge">SCTE-35 v1</Badge>
+                  <Badge className="medialive-badge">{activeTab === "splice-insert" ? "SPLICE_INSERT" : "TIME_SIGNAL"}</Badge>
                 </div>
                 <p className="medialive-panel-subtitle mt-1">
-                  Configure SCTE-35 parameters for broadcast insertion
+                  Select SCTE-35 command type
                 </p>
               </div>
-              <div className="medialive-panel-content space-y-6">
-                {/* Splice Info Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Database className="w-4 h-4 text-[#ff9900]" />
-                    <h3 className="text-lg font-semibold text-white">Splice Info Section</h3>
-                  </div>
-                  <div className="medialive-form-row">
-                    <div className="medialive-form-group">
-                      <label className="medialive-form-label">Table ID</label>
-                      <input
-                        type="number"
-                        value={spliceInfo.tableId}
-                        onChange={(e) => setSpliceInfo({ ...spliceInfo, tableId: parseInt(e.target.value) })}
-                        className="medialive-input"
-                      />
-                    </div>
-                    <div className="medialive-form-group">
-                      <label className="medialive-form-label">Protocol Version</label>
-                      <input
-                        type="number"
-                        value={spliceInfo.protocolVersion}
-                        onChange={(e) => setSpliceInfo({ ...spliceInfo, protocolVersion: parseInt(e.target.value) })}
-                        className="medialive-input"
-                      />
-                    </div>
-                    <div className="medialive-form-group">
-                      <label className="medialive-form-label">PTS Adjustment</label>
-                      <input
-                        type="number"
-                        value={spliceInfo.ptsAdjustment}
-                        onChange={(e) => setSpliceInfo({ ...spliceInfo, ptsAdjustment: parseInt(e.target.value) })}
-                        className="medialive-input"
-                      />
-                    </div>
-                    <div className="medialive-form-group">
-                      <label className="medialive-form-label">CW Index</label>
-                      <input
-                        type="number"
-                        value={spliceInfo.cwIndex}
-                        onChange={(e) => setSpliceInfo({ ...spliceInfo, cwIndex: parseInt(e.target.value) })}
-                        className="medialive-input"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="encryptedPacket"
-                      checked={spliceInfo.encryptedPacket}
-                      onChange={(e) => setSpliceInfo({ ...spliceInfo, encryptedPacket: e.target.checked })}
-                      className="medialive-checkbox"
-                    />
-                    <label htmlFor="encryptedPacket" className="medialive-form-label">
-                      Encrypted Packet
-                    </label>
-                  </div>
-                </div>
+              <div className="medialive-panel-content">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="medialive-tabs">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="splice-insert" className="medialive-tab">
+                      Splice Insert
+                    </TabsTrigger>
+                    <TabsTrigger value="time-signal" className="medialive-tab">
+                      Time Signal
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            </div>
 
-                {/* Command Type Selection */}
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Activity className="w-4 h-4 text-[#ff9900]" />
-                    <h3 className="text-lg font-semibold text-white">Command Configuration</h3>
-                  </div>
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="medialive-tabs">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="splice-insert" className="medialive-tab">
-                        Splice Insert
-                      </TabsTrigger>
-                      <TabsTrigger value="time-signal" className="medialive-tab">
-                        Time Signal
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="splice-insert" className="mt-4 space-y-4">
-                      <div className="medialive-form-row">
-                        <div className="medialive-form-group">
-                          <label className="medialive-form-label">Splice Event ID</label>
-                          <input
-                            type="number"
-                            value={spliceInsert.spliceEventId}
-                            onChange={(e) => setSpliceInsert({ ...spliceInsert, spliceEventId: parseInt(e.target.value) })}
-                            className="medialive-input"
-                          />
-                        </div>
-                        <div className="medialive-form-group">
-                          <label className="medialive-form-label">Unique Program ID</label>
-                          <input
-                            type="number"
-                            value={spliceInsert.uniqueProgramId}
-                            onChange={(e) => setSpliceInsert({ ...spliceInsert, uniqueProgramId: parseInt(e.target.value) })}
-                            className="medialive-input"
-                          />
-                        </div>
+            {/* Configuration Sections */}
+            <div className="space-y-4">
+              {activeTab === "splice-insert" ? (
+                sections.map(renderSection)
+              ) : (
+                <div className="medialive-panel">
+                  <div className="medialive-panel-header px-4 py-3 rounded-t-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="text-[#ff9900]">
+                        <Activity className="w-4 h-4" />
                       </div>
-                      <div className="medialive-form-row-3">
-                        <div className="medialive-form-group">
-                          <label className="medialive-form-label">Available</label>
-                          <input
-                            type="number"
-                            value={spliceInsert.available}
-                            onChange={(e) => setSpliceInsert({ ...spliceInsert, available: parseInt(e.target.value) })}
-                            className="medialive-input"
-                          />
-                        </div>
-                        <div className="medialive-form-group">
-                          <label className="medialive-form-label">Expected</label>
-                          <input
-                            type="number"
-                            value={spliceInsert.expected}
-                            onChange={(e) => setSpliceInsert({ ...spliceInsert, expected: parseInt(e.target.value) })}
-                            className="medialive-input"
-                          />
-                        </div>
-                        <div className="medialive-form-group">
-                          <label className="medialive-form-label">Break Duration</label>
-                          <input
-                            type="number"
-                            value={spliceInsert.breakDuration}
-                            onChange={(e) => setSpliceInsert({ ...spliceInsert, breakDuration: parseInt(e.target.value) })}
-                            className="medialive-input"
-                          />
+                      <div>
+                        <h3 className="medialive-panel-title text-sm">Time Signal Configuration</h3>
+                        <p className="medialive-panel-subtitle text-xs">Configure time signal parameters</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="medialive-panel-content p-4">
+                    <div className="medialive-form-row">
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">PTS</label>
+                        <input
+                          type="number"
+                          value={timeSignal.pts}
+                          onChange={(e) => setTimeSignal({ ...timeSignal, pts: parseInt(e.target.value) })}
+                          className="medialive-input"
+                        />
+                        <div className="flex items-center space-x-1 mt-1">
+                          <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
+                          <span className="text-xs text-[#a0aec0]">33-bit presentation timestamp</span>
                         </div>
                       </div>
                       <div className="medialive-form-group">
-                        <label className="medialive-form-label">Splice Time PTS</label>
-                        <input
-                          type="number"
-                          value={spliceInsert.spliceTimePts}
-                          onChange={(e) => setSpliceInsert({ ...spliceInsert, spliceTimePts: parseInt(e.target.value) })}
-                          className="medialive-input"
-                        />
-                      </div>
-                      <div className="medialive-form-row">
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id="outOfNetwork"
-                            checked={spliceInsert.outOfNetworkIndicator}
-                            onChange={(e) => setSpliceInsert({ ...spliceInsert, outOfNetworkIndicator: e.target.checked })}
-                            className="medialive-checkbox"
-                          />
-                          <label htmlFor="outOfNetwork" className="medialive-form-label">
-                            Out of Network
-                          </label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id="programSplice"
-                            checked={spliceInsert.programSpliceFlag}
-                            onChange={(e) => setSpliceInsert({ ...spliceInsert, programSpliceFlag: e.target.checked })}
-                            className="medialive-checkbox"
-                          />
-                          <label htmlFor="programSplice" className="medialive-form-label">
-                            Program Splice
-                          </label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id="durationFlag"
-                            checked={spliceInsert.durationFlag}
-                            onChange={(e) => setSpliceInsert({ ...spliceInsert, durationFlag: e.target.checked })}
-                            className="medialive-checkbox"
-                          />
-                          <label htmlFor="durationFlag" className="medialive-form-label">
-                            Duration Flag
-                          </label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id="spliceImmediate"
-                            checked={spliceInsert.spliceImmediateFlag}
-                            onChange={(e) => setSpliceInsert({ ...spliceInsert, spliceImmediateFlag: e.target.checked })}
-                            className="medialive-checkbox"
-                          />
-                          <label htmlFor="spliceImmediate" className="medialive-form-label">
-                            Splice Immediate
-                          </label>
-                        </div>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="time-signal" className="mt-4 space-y-4">
-                      <div className="medialive-form-row">
-                        <div className="medialive-form-group">
-                          <label className="medialive-form-label">PTS</label>
-                          <input
-                            type="number"
-                            value={timeSignal.pts}
-                            onChange={(e) => setTimeSignal({ ...timeSignal, pts: parseInt(e.target.value) })}
-                            className="medialive-input"
-                          />
-                        </div>
-                        <div className="flex items-center space-x-2">
+                        <label className="medialive-form-label">Time Specified</label>
+                        <div className="flex items-center space-x-2 mt-2">
                           <Switch
                             id="timeSpecified"
                             checked={timeSignal.timeSpecified}
                             onCheckedChange={(checked) => setTimeSignal({ ...timeSignal, timeSpecified: !!checked })}
                           />
                           <label htmlFor="timeSpecified" className="medialive-form-label">
-                            Time Specified
+                            Specify time
                           </label>
                         </div>
                       </div>
-                    </TabsContent>
-                  </Tabs>
+                    </div>
+                  </div>
                 </div>
+              )}
+            </div>
 
-                {/* Output Format */}
+            {/* Output Format and Encode */}
+            <div className="medialive-panel rounded-lg">
+              <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                <div className="flex items-center space-x-2">
+                  <Monitor className="w-5 h-5 text-[#ff9900]" />
+                  <h2 className="medialive-panel-title">Output Configuration</h2>
+                </div>
+                <p className="medialive-panel-subtitle mt-1">
+                  Configure output format and encode
+                </p>
+              </div>
+              <div className="medialive-panel-content">
                 <div className="flex items-center space-x-4">
                   <label className="medialive-form-label">Output Format:</label>
                   <Select value={outputFormat} onValueChange={(value: "base64" | "hex") => setOutputFormat(value)}>
@@ -531,6 +798,39 @@ export default function Encoder() {
                     <span className="text-sm text-white">100%</span>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="medialive-panel rounded-lg">
+              <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                <div className="flex items-center space-x-2">
+                  <Zap className="w-5 h-5 text-[#ff9900]" />
+                  <h2 className="medialive-panel-title">Quick Actions</h2>
+                </div>
+              </div>
+              <div className="medialive-panel-content space-y-3">
+                <button 
+                  onClick={() => sections.forEach(s => setSections(sections.map(sec => ({ ...sec, expanded: sec.id === 'splice-info' || sec.id === 'event-config' }))))}
+                  className="medialive-button medialive-button-secondary w-full"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Reset to Basic
+                </button>
+                <button 
+                  onClick={() => sections.forEach(s => setSections(sections.map(sec => ({ ...sec, expanded: true }))))}
+                  className="medialive-button medialive-button-secondary w-full"
+                >
+                  <ChevronDown className="w-4 h-4 mr-2" />
+                  Expand All
+                </button>
+                <button 
+                  onClick={() => sections.forEach(s => setSections(sections.map(sec => ({ ...sec, expanded: false }))))}
+                  className="medialive-button medialive-button-secondary w-full"
+                >
+                  <ChevronRight className="w-4 h-4 mr-2" />
+                  Collapse All
+                </button>
               </div>
             </div>
           </div>

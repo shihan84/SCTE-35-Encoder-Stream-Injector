@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import MediaLiveHeader from "@/components/medialive/medialive-header";
+import MediaLiveSidebar from "@/components/medialive/medialive-sidebar";
+import MediaLiveMetricsCard, { StreamMetricsCard, SystemMetricsCard, SCTE35MetricsCard } from "@/components/medialive/medialive-metrics-card";
+import MediaLiveStatusIndicator from "@/components/medialive/medialive-status-indicator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,532 +16,559 @@ import {
   Zap, 
   Activity, 
   Play, 
-  Pause, 
-  BarChart3, 
-  Shield, 
-  Monitor,
-  Network,
+  Square, 
+  Plus,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Users,
+  Wifi,
+  Cpu,
+  HardDrive,
+  BarChart3,
   FileText,
-  Database,
-  Workflow,
-  Layers
+  HelpCircle,
+  Cloud,
+  Shield,
+  Database
 } from "lucide-react";
 
 export default function Home() {
+  const [channelStatus, setChannelStatus] = useState<'running' | 'stopped' | 'starting' | 'error'>('stopped');
   const [activeTab, setActiveTab] = useState("overview");
 
+  // Mock data for metrics
+  const [metrics, setMetrics] = useState({
+    inputBitrate: 4850,
+    outputBitrate: 4620,
+    viewers: 42,
+    uptime: 3600,
+    packetLoss: 0.8,
+    latency: 145,
+    cpu: 45,
+    memory: 62,
+    disk: 34,
+    network: 28,
+    totalInjections: 156,
+    successfulInjections: 154,
+    failedInjections: 2,
+    lastInjection: new Date().toISOString()
+  });
+
+  const handleStartChannel = () => {
+    setChannelStatus('starting');
+    setTimeout(() => setChannelStatus('running'), 2000);
+  };
+
+  const handleStopChannel = () => {
+    setChannelStatus('stopped');
+  };
+
+  const handleRefreshMetrics = () => {
+    // Simulate metrics refresh
+    setMetrics(prev => ({
+      ...prev,
+      inputBitrate: Math.floor(Math.random() * 1000) + 4500,
+      outputBitrate: Math.floor(Math.random() * 800) + 4200,
+      viewers: Math.floor(Math.random() * 50) + 10,
+      packetLoss: Math.random() * 2,
+      latency: Math.floor(Math.random() * 100) + 100,
+      cpu: Math.floor(Math.random() * 40) + 30,
+      memory: Math.floor(Math.random() * 30) + 50,
+      network: Math.floor(Math.random() * 40) + 20
+    }));
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto space-y-8 p-4">
-        {/* Header */}
-        <div className="text-center space-y-4 py-8">
-          <div className="flex justify-center">
-            <div className="relative w-32 h-32 md:w-40 md:h-40">
-              <img
-                src="/logo.svg"
-                alt="Z.ai Logo"
-                className="w-full h-full object-contain"
-              />
+    <div className="medialive-container">
+      <MediaLiveHeader 
+        title="AWS Elemental MediaLive"
+        subtitle="SCTE-35 Encoder & Stream Injector"
+        showChannelInfo={true}
+        channelStatus={channelStatus}
+        channelName="Production Channel 1"
+        channelId="ml-1234567890"
+      />
+      
+      <div className="flex">
+        <MediaLiveSidebar />
+        
+        <main className="medialive-main-content flex-1">
+          <div className="mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-gray-600">Monitor your MediaLive channels and SCTE-35 activity</p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Button 
+                  onClick={handleRefreshMetrics}
+                  variant="outline"
+                  size="sm"
+                  className="medialive-button-secondary"
+                >
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  Refresh
+                </Button>
+                {channelStatus === 'stopped' ? (
+                  <Button 
+                    onClick={handleStartChannel}
+                    className="medialive-button-primary"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Start Channel
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={handleStopChannel}
+                    variant="destructive"
+                  >
+                    <Square className="w-4 h-4 mr-2" />
+                    Stop Channel
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
-          <h1 className="text-5xl font-bold tracking-tight">SCTE-35 Broadcast Suite</h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Professional SCTE-35 encoding, stream injection, and broadcast monitoring solution for digital video broadcasting
-          </p>
-        </div>
 
-        {/* Main Navigation Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4 mx-auto">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="encoding">Encoding</TabsTrigger>
-            <TabsTrigger value="streaming">Streaming</TabsTrigger>
-            <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
-          </TabsList>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="medialive-tabs">
+              <TabsTrigger value="overview" className="medialive-tab">Overview</TabsTrigger>
+              <TabsTrigger value="channels" className="medialive-tab">Channels</TabsTrigger>
+              <TabsTrigger value="scte35" className="medialive-tab">SCTE-35</TabsTrigger>
+              <TabsTrigger value="analytics" className="medialive-tab">Analytics</TabsTrigger>
+            </TabsList>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-8">
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Active Streams</p>
-                      <p className="text-2xl font-bold">0</p>
-                    </div>
-                    <Play className="h-8 w-8 text-green-600" />
+            <TabsContent value="overview" className="space-y-6">
+              {/* Key Metrics Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StreamMetricsCard
+                  inputBitrate={metrics.inputBitrate}
+                  outputBitrate={metrics.outputBitrate}
+                  viewers={metrics.viewers}
+                  uptime={metrics.uptime}
+                  status={channelStatus}
+                  onRefresh={handleRefreshMetrics}
+                />
+                
+                <SystemMetricsCard
+                  cpu={metrics.cpu}
+                  memory={metrics.memory}
+                  disk={metrics.disk}
+                  network={metrics.network}
+                  status={channelStatus === 'running' ? 'running' : 'stopped'}
+                  onRefresh={handleRefreshMetrics}
+                />
+                
+                <SCTE35MetricsCard
+                  totalInjections={metrics.totalInjections}
+                  successfulInjections={metrics.successfulInjections}
+                  failedInjections={metrics.failedInjections}
+                  lastInjection={metrics.lastInjection}
+                  status={channelStatus === 'running' ? 'running' : 'idle'}
+                  onRefresh={handleRefreshMetrics}
+                />
+                
+                <MediaLiveMetricsCard
+                  title="Stream Quality"
+                  description="Network performance metrics"
+                  icon={<div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Wifi className="w-6 h-6 text-purple-500" />
+                  </div>}
+                  data={{
+                    value: metrics.latency,
+                    unit: 'ms',
+                    trend: metrics.latency > 200 ? 'up' : 'stable',
+                    status: metrics.latency > 1000 ? 'error' : metrics.latency > 500 ? 'warning' : 'running',
+                    timestamp: new Date().toISOString()
+                  }}
+                  showTrend={true}
+                  showStatus={true}
+                  refreshable={true}
+                  onRefresh={handleRefreshMetrics}
+                />
+              </div>
+
+              {/* Quick Actions */}
+              <Card className="medialive-panel">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Zap className="w-5 h-5" />
+                    Quick Actions
+                  </CardTitle>
+                  <CardDescription>
+                    Common tasks for managing your MediaLive channels
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Link href="/encoder">
+                      <Button className="medialive-button-secondary w-full justify-start">
+                        <Radio className="w-4 h-4 mr-2" />
+                        SCTE-35 Encoder
+                      </Button>
+                    </Link>
+                    <Link href="/stream-injection">
+                      <Button className="medialive-button-secondary w-full justify-start">
+                        <Zap className="w-4 h-4 mr-2" />
+                        Stream Injection
+                      </Button>
+                    </Link>
+                    <Link href="/monitor">
+                      <Button className="medialive-button-secondary w-full justify-start">
+                        <Activity className="w-4 h-4 mr-2" />
+                        Monitor
+                      </Button>
+                    </Link>
+                    <Link href="/channels/create">
+                      <Button className="medialive-button-primary w-full justify-start">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Channel
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">SCTE-35 Events</p>
-                      <p className="text-2xl font-bold">24</p>
-                    </div>
-                    <Radio className="h-8 w-8 text-blue-600" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">System Health</p>
-                      <p className="text-2xl font-bold">98%</p>
-                    </div>
-                    <Shield className="h-8 w-8 text-green-600" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Uptime</p>
-                      <p className="text-2xl font-bold">24h</p>
-                    </div>
-                    <Activity className="h-8 w-8 text-purple-600" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Feature Categories */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* SCTE-35 Encoding */}
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <Link href="/encoder">
+              {/* Recent Activity */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="medialive-panel">
                   <CardHeader>
-                    <div className="flex items-center space-x-2">
-                      <Radio className="w-6 h-6 text-blue-600" />
-                      <CardTitle>SCTE-35 Encoding</CardTitle>
-                    </div>
-                    <CardDescription>
-                      Create and encode SCTE-35 messages with professional-grade tools
-                    </CardDescription>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Activity className="w-5 h-5" />
+                      Recent SCTE-35 Activity
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Splice Insert</span>
-                        <Badge variant="outline">Supported</Badge>
+                      <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                          <div>
+                            <div className="font-medium">Ad Break Start</div>
+                            <div className="text-sm text-gray-600">Channel 1 • 2 minutes ago</div>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="bg-green-100 text-green-800">
+                          Success
+                        </Badge>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Time Signal</span>
-                        <Badge variant="outline">Supported</Badge>
+                      
+                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <Clock className="w-5 h-5 text-blue-500" />
+                          <div>
+                            <div className="font-medium">Program Start</div>
+                            <div className="text-sm text-gray-600">Channel 1 • 15 minutes ago</div>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                          Scheduled
+                        </Badge>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Multiple Formats</span>
-                        <Badge variant="outline">Base64/Hex</Badge>
+                      
+                      <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <AlertCircle className="w-5 h-5 text-yellow-500" />
+                          <div>
+                            <div className="font-medium">Injection Failed</div>
+                            <div className="text-sm text-gray-600">Channel 2 • 1 hour ago</div>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
+                          Failed
+                        </Badge>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">CRC Validation</span>
-                        <Badge variant="outline">Automatic</Badge>
-                      </div>
-                      <Button className="w-full mt-4">
-                        Open Encoder
-                      </Button>
                     </div>
                   </CardContent>
-                </Link>
-              </Card>
+                </Card>
 
-              {/* Live Stream Processing */}
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <Link href="/stream-injection">
+                <Card className="medialive-panel">
                   <CardHeader>
-                    <div className="flex items-center space-x-2">
-                      <Zap className="w-6 h-6 text-green-600" />
-                      <CardTitle>Live Stream Processing</CardTitle>
-                    </div>
-                    <CardDescription>
-                      Real-time SCTE-35 injection and multi-protocol stream handling
-                    </CardDescription>
+                    <CardTitle className="flex items-center space-x-2">
+                      <BarChart3 className="w-5 h-5" />
+                      System Health
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm">SRT Protocol</span>
-                        <Badge variant="outline">Supported</Badge>
+                        <div className="flex items-center space-x-3">
+                          <Cpu className="w-5 h-5 text-blue-500" />
+                          <span className="font-medium">CPU Usage</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-24 bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-blue-500 h-2 rounded-full" 
+                              style={{ width: `${metrics.cpu}%` }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium">{metrics.cpu}%</span>
+                        </div>
                       </div>
+                      
                       <div className="flex items-center justify-between">
-                        <span className="text-sm">HLS/DASH</span>
-                        <Badge variant="outline">Supported</Badge>
+                        <div className="flex items-center space-x-3">
+                          <HardDrive className="w-5 h-5 text-green-500" />
+                          <span className="font-medium">Memory Usage</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-24 bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-green-500 h-2 rounded-full" 
+                              style={{ width: `${metrics.memory}%` }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium">{metrics.memory}%</span>
+                        </div>
                       </div>
+                      
                       <div className="flex items-center justify-between">
-                        <span className="text-sm">RTMP</span>
-                        <Badge variant="outline">Supported</Badge>
+                        <div className="flex items-center space-x-3">
+                          <Wifi className="w-5 h-5 text-purple-500" />
+                          <span className="font-medium">Network Usage</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-24 bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-purple-500 h-2 rounded-full" 
+                              style={{ width: `${metrics.network}%` }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium">{metrics.network}%</span>
+                        </div>
                       </div>
+                      
                       <div className="flex items-center justify-between">
-                        <span className="text-sm">Real-time Injection</span>
-                        <Badge variant="outline">Live</Badge>
+                        <div className="flex items-center space-x-3">
+                          <Database className="w-5 h-5 text-orange-500" />
+                          <span className="font-medium">Disk Usage</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-24 bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-orange-500 h-2 rounded-full" 
+                              style={{ width: `${metrics.disk}%` }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium">{metrics.disk}%</span>
+                        </div>
                       </div>
-                      <Button className="w-full mt-4">
-                        Start Streaming
-                      </Button>
                     </div>
                   </CardContent>
-                </Link>
-              </Card>
+                </Card>
+              </div>
+            </TabsContent>
 
-              {/* Broadcast Monitoring */}
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <Link href="/monitor">
-                  <CardHeader>
-                    <div className="flex items-center space-x-2">
-                      <Monitor className="w-6 h-6 text-purple-600" />
-                      <CardTitle>Broadcast Monitoring</CardTitle>
+            <TabsContent value="channels" className="space-y-6">
+              <Card className="medialive-panel">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Radio className="w-5 h-5" />
+                        MediaLive Channels
+                      </CardTitle>
+                      <CardDescription>
+                        Manage your MediaLive channels and configurations
+                      </CardDescription>
                     </div>
+                    <Link href="/channels/create">
+                      <Button className="medialive-button-primary">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Channel
+                      </Button>
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Channel List */}
+                    <div className="border rounded-lg">
+                      <div className="grid grid-cols-12 gap-4 p-4 border-b bg-gray-50 font-medium text-sm text-gray-700">
+                        <div className="col-span-4">Channel Name</div>
+                        <div className="col-span-2">Status</div>
+                        <div className="col-span-2">Input</div>
+                        <div className="col-span-2">Output</div>
+                        <div className="col-span-2">Actions</div>
+                      </div>
+                      
+                      <div className="grid grid-cols-12 gap-4 p-4 border-b hover:bg-gray-50">
+                        <div className="col-span-4">
+                          <div className="font-medium">Production Channel 1</div>
+                          <div className="text-sm text-gray-600">ml-1234567890</div>
+                        </div>
+                        <div className="col-span-2">
+                          <MediaLiveStatusIndicator status={channelStatus} size="sm" />
+                        </div>
+                        <div className="col-span-2">
+                          <div className="text-sm">SRT</div>
+                          <div className="text-xs text-gray-600">9000</div>
+                        </div>
+                        <div className="col-span-2">
+                          <div className="text-sm">SRT</div>
+                          <div className="text-xs text-gray-600">9001</div>
+                        </div>
+                        <div className="col-span-2">
+                          <div className="flex space-x-2">
+                            <Button size="sm" variant="outline">Edit</Button>
+                            <Button size="sm" variant="outline">Monitor</Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-12 gap-4 p-4 hover:bg-gray-50">
+                        <div className="col-span-4">
+                          <div className="font-medium">Backup Channel</div>
+                          <div className="text-sm text-gray-600">ml-0987654321</div>
+                        </div>
+                        <div className="col-span-2">
+                          <MediaLiveStatusIndicator status="stopped" size="sm" />
+                        </div>
+                        <div className="col-span-2">
+                          <div className="text-sm">RTMP</div>
+                          <div className="text-xs text-gray-600">1935</div>
+                        </div>
+                        <div className="col-span-2">
+                          <div className="text-sm">HLS</div>
+                          <div className="text-xs text-gray-600">/live/stream</div>
+                        </div>
+                        <div className="col-span-2">
+                          <div className="flex space-x-2">
+                            <Button size="sm" variant="outline">Edit</Button>
+                            <Button size="sm" variant="outline">Monitor</Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="scte35" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="medialive-panel">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Radio className="w-5 h-5" />
+                      SCTE-35 Encoder
+                    </CardTitle>
                     <CardDescription>
-                      Comprehensive monitoring and analytics for broadcast operations
+                      Create and encode SCTE-35 messages for ad insertion
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Stream Health</span>
-                        <Badge variant="outline">Real-time</Badge>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
+                          <select className="medialive-select w-full">
+                            <option>Ad Break Start</option>
+                            <option>Ad Break End</option>
+                            <option>Program Start</option>
+                            <option>Program End</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Duration (seconds)</label>
+                          <input type="number" className="medialive-input w-full" placeholder="30" />
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">SCTE-35 Tracking</span>
-                        <Badge variant="outline">Automatic</Badge>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Cue ID</label>
+                        <input type="text" className="medialive-input w-full" placeholder="1" />
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Quality Metrics</span>
-                        <Badge variant="outline">Detailed</Badge>
+                      
+                      <Link href="/encoder">
+                        <Button className="medialive-button-primary w-full">
+                          Open SCTE-35 Encoder
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="medialive-panel">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Zap className="w-5 h-5" />
+                      Stream Injection
+                    </CardTitle>
+                    <CardDescription>
+                      Inject SCTE-35 cues into live streams
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Stream Type</label>
+                          <select className="medialive-select w-full">
+                            <option>SRT</option>
+                            <option>HLS</option>
+                            <option>DASH</option>
+                            <option>RTMP</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Injection Mode</label>
+                          <select className="medialive-select w-full">
+                            <option>Manual</option>
+                            <option>Scheduled</option>
+                            <option>Automatic</option>
+                          </select>
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Alert System</span>
-                        <Badge variant="outline">Smart</Badge>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">SCTE-35 Data</label>
+                        <textarea className="medialive-input w-full" rows={3} placeholder="Paste SCTE-35 data here..." />
                       </div>
-                      <Button className="w-full mt-4">
+                      
+                      <Link href="/stream-injection">
+                        <Button className="medialive-button-primary w-full">
+                          Open Stream Injection
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="analytics" className="space-y-6">
+              <Card className="medialive-panel">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Analytics Dashboard
+                  </CardTitle>
+                  <CardDescription>
+                    Detailed analytics and performance metrics
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-12">
+                    <BarChart3 className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Analytics Coming Soon</h3>
+                    <p className="text-gray-600 mb-4">
+                      Advanced analytics and reporting features will be available soon.
+                    </p>
+                    <Link href="/monitor">
+                      <Button className="medialive-button-primary">
                         View Monitor
                       </Button>
-                    </div>
-                  </CardContent>
-                </Link>
-              </Card>
-            </div>
-
-            {/* Advanced Features */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Advanced Features</CardTitle>
-                <CardDescription>
-                  Professional-grade capabilities for broadcast operations
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="text-center space-y-2">
-                    <Layers className="w-8 h-8 mx-auto text-blue-600" />
-                    <h3 className="font-semibold">Multi-Protocol</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Support for SRT, HLS, DASH, RTMP
-                    </p>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <Network className="w-8 h-8 mx-auto text-green-600" />
-                    <h3 className="font-semibold">Low Latency</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Sub-second latency for live operations
-                    </p>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <Database className="w-8 h-8 mx-auto text-purple-600" />
-                    <h3 className="font-semibold">High Availability</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Redundant systems for reliability
-                    </p>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <Workflow className="w-8 h-8 mx-auto text-orange-600" />
-                    <h3 className="font-semibold">Automation</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Automated SCTE-35 scheduling
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Encoding Tab */}
-          <TabsContent value="encoding" className="space-y-6">
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl font-bold">SCTE-35 Encoding Tools</h2>
-              <p className="text-muted-foreground">
-                Professional SCTE-35 message creation and encoding capabilities
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <Link href="/encoder">
-                  <CardHeader>
-                    <div className="flex items-center space-x-2">
-                      <Radio className="w-6 h-6 text-blue-600" />
-                      <CardTitle>Advanced Encoder</CardTitle>
-                    </div>
-                    <CardDescription>
-                      Full-featured SCTE-35 encoder with comprehensive configuration options
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm">
-                      <div>• Splice Insert commands</div>
-                      <div>• Time Signal commands</div>
-                      <div>• Custom descriptors</div>
-                      <div>• PTS timing control</div>
-                      <div>• Multiple output formats</div>
-                      <div>• CRC32 validation</div>
-                    </div>
-                    <Button className="w-full mt-4">
-                      Open Advanced Encoder
-                    </Button>
-                  </CardContent>
-                </Link>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <Link href="/encoder">
-                  <CardHeader>
-                    <div className="flex items-center space-x-2">
-                      <FileText className="w-6 h-6 text-green-600" />
-                      <CardTitle>Quick Encoder</CardTitle>
-                    </div>
-                    <CardDescription>
-                      Rapid SCTE-35 message generation for common use cases
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm">
-                      <div>• Pre-built templates</div>
-                      <div>• Ad break start/end</div>
-                      <div>• Program boundaries</div>
-                      <div>• One-click encoding</div>
-                      <div>• Batch processing</div>
-                      <div>• Export options</div>
-                    </div>
-                    <Button className="w-full mt-4">
-                      Open Quick Encoder
-                    </Button>
-                  </CardContent>
-                </Link>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Streaming Tab */}
-          <TabsContent value="streaming" className="space-y-6">
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl font-bold">Live Stream Processing</h2>
-              <p className="text-muted-foreground">
-                Real-time stream handling and SCTE-35 injection capabilities
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <Link href="/stream-injection">
-                  <CardHeader>
-                    <div className="flex items-center space-x-2">
-                      <Zap className="w-6 h-6 text-blue-600" />
-                      <CardTitle>Stream Injection</CardTitle>
-                    </div>
-                    <CardDescription>
-                      Inject SCTE-35 cues into live streams in real-time
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm">
-                      <div>• Live injection</div>
-                      <div>• Scheduled events</div>
-                      <div>• Multi-protocol support</div>
-                      <div>• Real-time monitoring</div>
-                    </div>
-                    <Button className="w-full mt-4">
-                      Open Stream Injector
-                    </Button>
-                  </CardContent>
-                </Link>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader>
-                  <div className="flex items-center space-x-2">
-                    <Network className="w-6 h-6 text-green-600" />
-                    <CardTitle>Protocol Support</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Comprehensive protocol support for various streaming needs
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div>• SRT (Secure Reliable Transport)</div>
-                    <div>• HLS (HTTP Live Streaming)</div>
-                    <div>• DASH (Dynamic Adaptive Streaming)</div>
-                    <div>• RTMP (Real-Time Messaging Protocol)</div>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
-
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader>
-                  <div className="flex items-center space-x-2">
-                    <Settings className="w-6 h-6 text-purple-600" />
-                    <CardTitle>Stream Configuration</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Advanced stream configuration and quality control
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div>• Bitrate control</div>
-                    <div>• Resolution management</div>
-                    <div>• Codec selection</div>
-                    <div>• Quality profiles</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Monitoring Tab */}
-          <TabsContent value="monitoring" className="space-y-6">
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl font-bold">Broadcast Monitoring</h2>
-              <p className="text-muted-foreground">
-                Comprehensive monitoring and analytics for broadcast operations
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <Link href="/monitor">
-                  <CardHeader>
-                    <div className="flex items-center space-x-2">
-                      <Monitor className="w-6 h-6 text-blue-600" />
-                      <CardTitle>Live Monitor</CardTitle>
-                    </div>
-                    <CardDescription>
-                      Real-time monitoring of streams and SCTE-35 activity
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm">
-                      <div>• Real-time metrics</div>
-                      <div>• Stream health</div>
-                      <div>• SCTE-35 tracking</div>
-                      <div>• Quality monitoring</div>
-                      <div>• Alert system</div>
-                      <div>• Performance analytics</div>
-                    </div>
-                    <Button className="w-full mt-4">
-                      Open Live Monitor
-                    </Button>
-                  </CardContent>
-                </Link>
-              </Card>
-
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader>
-                  <div className="flex items-center space-x-2">
-                    <BarChart3 className="w-6 h-6 text-green-600" />
-                    <CardTitle>Analytics Dashboard</CardTitle>
-                  </div>
-                  <CardDescription>
-                    Comprehensive analytics and reporting for broadcast operations
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm">
-                    <div>• Historical data</div>
-                    <div>• Performance trends</div>
-                    <div>• Error analysis</div>
-                    <div>• Capacity planning</div>
-                    <div>• Export reports</div>
-                    <div>• Custom dashboards</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* System Status Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle>System Status Overview</CardTitle>
-                <CardDescription>
-                  Current system status and performance metrics
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 border rounded">
-                    <div className="text-2xl font-bold text-green-600">98%</div>
-                    <div className="text-sm text-muted-foreground">System Health</div>
-                  </div>
-                  <div className="text-center p-4 border rounded">
-                    <div className="text-2xl font-bold text-blue-600">0</div>
-                    <div className="text-sm text-muted-foreground">Active Streams</div>
-                  </div>
-                  <div className="text-center p-4 border rounded">
-                    <div className="text-2xl font-bold text-purple-600">24</div>
-                    <div className="text-sm text-muted-foreground">SCTE-35 Events</div>
-                  </div>
-                  <div className="text-center p-4 border rounded">
-                    <div className="text-2xl font-bold text-orange-600">24h</div>
-                    <div className="text-sm text-muted-foreground">Uptime</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>
-              Frequently used features and tools
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Link href="/encoder">
-                <Button variant="outline" className="w-full">
-                  <Radio className="w-4 h-4 mr-2" />
-                  Encode SCTE-35
-                </Button>
-              </Link>
-              <Link href="/stream-injection">
-                <Button variant="outline" className="w-full">
-                  <Zap className="w-4 h-4 mr-2" />
-                  Start Stream
-                </Button>
-              </Link>
-              <Link href="/monitor">
-                <Button variant="outline" className="w-full">
-                  <Monitor className="w-4 h-4 mr-2" />
-                  View Monitor
-                </Button>
-              </Link>
-              <Button variant="outline" className="w-full">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </TabsContent>
+          </Tabs>
+        </main>
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Play, Pause, Square, Settings, Monitor, Copy, Download, ArrowLeft } from "lucide-react";
+import { Play, Pause, Square, Settings, Monitor, Copy, Download, ArrowLeft, Zap, Activity, Network, Database, Shield } from "lucide-react";
 import FFmpegCommandBuilder from "@/components/ffmpeg-command-builder";
 
 interface StreamConfig {
@@ -267,62 +267,95 @@ export default function StreamInjection() {
 
   const getStatusColor = (status: StreamStatus['status']) => {
     switch (status) {
-      case 'running': return 'bg-green-500';
-      case 'starting': return 'bg-yellow-500';
-      case 'error': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case 'running': return 'medialive-status-running';
+      case 'starting': return 'medialive-status-warning';
+      case 'error': return 'medialive-status-error';
+      default: return 'medialive-status-stopped';
+    }
+  };
+
+  const getStatusText = (status: StreamStatus['status']) => {
+    switch (status) {
+      case 'running': return 'Active';
+      case 'starting': return 'Starting';
+      case 'error': return 'Error';
+      default: return 'Stopped';
     }
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center space-x-4">
-          <Link href="/">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">SCTE-35 Stream Injection</h1>
-            <p className="text-muted-foreground">
-              Inject SCTE-35 cues into live streams in real-time
-            </p>
+    <div className="medialive-container">
+      {/* AWS MediaLive-style Header */}
+      <div className="bg-gradient-to-r from-[#16191f] to-[#0f1419] border-b border-[#232f3e] px-6 py-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Link href="/">
+                <Button variant="outline" size="sm" className="medialive-button medialive-button-secondary">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Home
+                </Button>
+              </Link>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-[#ff9900] to-[#ff8800] rounded-lg flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-[#0f1419]" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white">SCTE-35 Stream Injection</h1>
+                  <p className="text-sm text-[#a0aec0]">AWS Elemental MediaLive Compatible</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className={`medialive-status-indicator ${getStatusColor(streamStatus.status)}`}></div>
+                <span className="text-sm text-[#a0aec0]">{getStatusText(streamStatus.status)}</span>
+              </div>
+              <Badge className="medialive-badge medialive-badge-success">PRODUCTION READY</Badge>
+            </div>
           </div>
         </div>
+      </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="medialive-tabs">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="config">Stream Config</TabsTrigger>
-            <TabsTrigger value="injection">Injection Points</TabsTrigger>
-            <TabsTrigger value="monitor">Monitor</TabsTrigger>
-            <TabsTrigger value="encoder">SCTE-35 Encoder</TabsTrigger>
+            <TabsTrigger value="config" className="medialive-tab">Stream Config</TabsTrigger>
+            <TabsTrigger value="injection" className="medialive-tab">Injection Points</TabsTrigger>
+            <TabsTrigger value="monitor" className="medialive-tab">Monitor</TabsTrigger>
+            <TabsTrigger value="encoder" className="medialive-tab">SCTE-35 Encoder</TabsTrigger>
           </TabsList>
 
           <TabsContent value="config" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Stream Configuration</CardTitle>
-                  <CardDescription>Configure input and output streams</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
+              {/* Stream Configuration Panel */}
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Settings className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">Stream Configuration</h2>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    Configure input and output streams
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
                   {/* Stream Identification */}
-                  <div>
-                    <Label htmlFor="streamName">Stream Name</Label>
-                    <Input
-                      id="streamName"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Stream Name</label>
+                    <input
+                      className="medialive-input"
                       value={streamConfig.streamName}
                       onChange={(e) => setStreamConfig(prev => ({ ...prev, streamName: e.target.value }))}
                       placeholder="Live_Service"
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="streamType">Stream Type</Label>
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Stream Type</label>
                     <Select value={streamConfig.streamType} onValueChange={(value: any) => setStreamConfig(prev => ({ ...prev, streamType: value }))}>
-                      <SelectTrigger>
+                      <SelectTrigger className="medialive-select">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -334,20 +367,20 @@ export default function StreamInjection() {
                     </Select>
                   </div>
 
-                  <div>
-                    <Label htmlFor="inputUrl">Input URL</Label>
-                    <Input
-                      id="inputUrl"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Input URL</label>
+                    <input
+                      className="medialive-input"
                       placeholder="srt://localhost:9000?streamid=live/stream"
                       value={streamConfig.inputUrl}
                       onChange={(e) => setStreamConfig(prev => ({ ...prev, inputUrl: e.target.value }))}
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="outputUrl">Output URL</Label>
-                    <Input
-                      id="outputUrl"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Output URL</label>
+                    <input
+                      className="medialive-input"
                       placeholder="srt://localhost:9001?streamid=live/output"
                       value={streamConfig.outputUrl}
                       onChange={(e) => setStreamConfig(prev => ({ ...prev, outputUrl: e.target.value }))}
@@ -355,13 +388,16 @@ export default function StreamInjection() {
                   </div>
 
                   {/* Video Specifications */}
-                  <div className="space-y-4 border-t pt-4">
-                    <h4 className="font-semibold text-lg">Video Specifications</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="videoResolution">Video Resolution</Label>
+                  <div className="space-y-4 border-t border-[#232f3e] pt-4">
+                    <div className="flex items-center space-x-2">
+                      <Database className="w-4 h-4 text-[#ff9900]" />
+                      <h3 className="text-lg font-semibold text-white">Video Specifications</h3>
+                    </div>
+                    <div className="medialive-form-row">
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">Video Resolution</label>
                         <Select value={streamConfig.videoResolution} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, videoResolution: value }))}>
-                          <SelectTrigger>
+                          <SelectTrigger className="medialive-select">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -371,10 +407,10 @@ export default function StreamInjection() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div>
-                        <Label htmlFor="videoCodec">Video Codec</Label>
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">Video Codec</label>
                         <Select value={streamConfig.videoCodec} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, videoCodec: value }))}>
-                          <SelectTrigger>
+                          <SelectTrigger className="medialive-select">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -385,11 +421,11 @@ export default function StreamInjection() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="pcr">PCR</Label>
+                    <div className="medialive-form-row">
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">PCR</label>
                         <Select value={streamConfig.pcr} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, pcr: value }))}>
-                          <SelectTrigger>
+                          <SelectTrigger className="medialive-select">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -398,10 +434,10 @@ export default function StreamInjection() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div>
-                        <Label htmlFor="profileLevel">Profile@Level</Label>
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">Profile@Level</label>
                         <Select value={streamConfig.profileLevel} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, profileLevel: value }))}>
-                          <SelectTrigger>
+                          <SelectTrigger className="medialive-select">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -413,20 +449,20 @@ export default function StreamInjection() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="gop">GOP</Label>
-                        <Input
-                          id="gop"
+                    <div className="medialive-form-row">
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">GOP</label>
+                        <input
+                          className="medialive-input"
                           type="number"
                           value={streamConfig.gop}
                           onChange={(e) => setStreamConfig(prev => ({ ...prev, gop: parseInt(e.target.value) }))}
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="bFrames">No of B Frames</Label>
-                        <Input
-                          id="bFrames"
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">No of B Frames</label>
+                        <input
+                          className="medialive-input"
                           type="number"
                           value={streamConfig.bFrames}
                           onChange={(e) => setStreamConfig(prev => ({ ...prev, bFrames: parseInt(e.target.value) }))}
@@ -434,67 +470,40 @@ export default function StreamInjection() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="videoBitrate">Video Bitrate (kbps)</Label>
-                        <Input
-                          id="videoBitrate"
-                          type="number"
-                          value={streamConfig.videoBitrate}
-                          onChange={(e) => setStreamConfig(prev => ({ ...prev, videoBitrate: parseInt(e.target.value) }))}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="chroma">Chroma</Label>
-                        <Select value={streamConfig.chroma} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, chroma: value }))}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="4:2:0">4:2:0</SelectItem>
-                            <SelectItem value="4:2:2">4:2:2</SelectItem>
-                            <SelectItem value="4:4:4">4:4:4</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="aspectRatio">Aspect Ratio</Label>
-                      <Select value={streamConfig.aspectRatio} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, aspectRatio: value }))}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="16:9">16:9</SelectItem>
-                          <SelectItem value="4:3">4:3</SelectItem>
-                          <SelectItem value="1:1">1:1</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Video Bitrate (kbps)</label>
+                      <input
+                        className="medialive-input"
+                        type="number"
+                        value={streamConfig.videoBitrate}
+                        onChange={(e) => setStreamConfig(prev => ({ ...prev, videoBitrate: parseInt(e.target.value) }))}
+                      />
                     </div>
                   </div>
 
                   {/* Audio Specifications */}
-                  <div className="space-y-4 border-t pt-4">
-                    <h4 className="font-semibold text-lg">Audio Specifications</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="audioCodec">Audio Codec</Label>
+                  <div className="space-y-4 border-t border-[#232f3e] pt-4">
+                    <div className="flex items-center space-x-2">
+                      <Activity className="w-4 h-4 text-[#ff9900]" />
+                      <h3 className="text-lg font-semibold text-white">Audio Specifications</h3>
+                    </div>
+                    <div className="medialive-form-row">
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">Audio Codec</label>
                         <Select value={streamConfig.audioCodec} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, audioCodec: value }))}>
-                          <SelectTrigger>
+                          <SelectTrigger className="medialive-select">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="AAC-LC">AAC-LC</SelectItem>
                             <SelectItem value="AAC-HE">AAC-HE</SelectItem>
-                            <SelectItem value="MP3">MP3</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
-                      <div>
-                        <Label htmlFor="audioBitrate">Audio Bitrate (kbps)</Label>
-                        <Input
-                          id="audioBitrate"
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">Audio Bitrate (kbps)</label>
+                        <input
+                          className="medialive-input"
                           type="number"
                           value={streamConfig.audioBitrate}
                           onChange={(e) => setStreamConfig(prev => ({ ...prev, audioBitrate: parseInt(e.target.value) }))}
@@ -502,52 +511,48 @@ export default function StreamInjection() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="audioLKFS">Audio LKFS</Label>
-                        <Input
-                          id="audioLKFS"
+                    <div className="medialive-form-row">
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">Audio LKFS</label>
+                        <input
+                          className="medialive-input"
                           type="number"
                           value={streamConfig.audioLKFS}
                           onChange={(e) => setStreamConfig(prev => ({ ...prev, audioLKFS: parseInt(e.target.value) }))}
                         />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {streamConfig.audioLKFS} dB
-                        </p>
                       </div>
-                      <div>
-                        <Label htmlFor="audioSamplingRate">Audio Sampling Rate</Label>
-                        <Select value={streamConfig.audioSamplingRate.toString()} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, audioSamplingRate: parseInt(value) }))}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="48000">48 kHz</SelectItem>
-                            <SelectItem value="44100">44.1 kHz</SelectItem>
-                            <SelectItem value="32000">32 kHz</SelectItem>
-                          </SelectContent>
-                        </Select>
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">Sampling Rate (Hz)</label>
+                        <input
+                          className="medialive-input"
+                          type="number"
+                          value={streamConfig.audioSamplingRate}
+                          onChange={(e) => setStreamConfig(prev => ({ ...prev, audioSamplingRate: parseInt(e.target.value) }))}
+                        />
                       </div>
                     </div>
                   </div>
 
                   {/* SCTE-35 Configuration */}
-                  <div className="space-y-4 border-t pt-4">
-                    <h4 className="font-semibold text-lg">SCTE-35 Configuration</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="scteDataPid">SCTE Data PID</Label>
-                        <Input
-                          id="scteDataPid"
+                  <div className="space-y-4 border-t border-[#232f3e] pt-4">
+                    <div className="flex items-center space-x-2">
+                      <Zap className="w-4 h-4 text-[#ff9900]" />
+                      <h3 className="text-lg font-semibold text-white">SCTE-35 Configuration</h3>
+                    </div>
+                    <div className="medialive-form-row">
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">SCTE Data PID</label>
+                        <input
+                          className="medialive-input"
                           type="number"
                           value={streamConfig.scteDataPid}
                           onChange={(e) => setStreamConfig(prev => ({ ...prev, scteDataPid: parseInt(e.target.value) }))}
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="nullPid">Null PID</Label>
-                        <Input
-                          id="nullPid"
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">Null PID</label>
+                        <input
+                          className="medialive-input"
                           type="number"
                           value={streamConfig.nullPid}
                           onChange={(e) => setStreamConfig(prev => ({ ...prev, nullPid: parseInt(e.target.value) }))}
@@ -555,419 +560,368 @@ export default function StreamInjection() {
                       </div>
                     </div>
 
-                    <div>
-                      <Label htmlFor="latency">Latency (milliseconds)</Label>
-                      <Input
-                        id="latency"
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Latency (ms)</label>
+                      <input
+                        className="medialive-input"
                         type="number"
                         value={streamConfig.latency}
                         onChange={(e) => setStreamConfig(prev => ({ ...prev, latency: parseInt(e.target.value) }))}
                       />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {streamConfig.latency / 1000} seconds
-                      </p>
                     </div>
-                  </div>
 
-                  {/* SCTE-35 Event Configuration */}
-                  <div className="space-y-4 border-t pt-4">
-                    <h4 className="font-semibold text-lg">SCTE-35 Event Configuration</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="adDuration">Ad Duration (seconds)</Label>
-                        <Input
-                          id="adDuration"
+                    <div className="medialive-form-row">
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">Ad Duration (seconds)</label>
+                        <input
+                          className="medialive-input"
                           type="number"
                           value={streamConfig.adDuration}
                           onChange={(e) => setStreamConfig(prev => ({ ...prev, adDuration: parseInt(e.target.value) }))}
                         />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {Math.floor(streamConfig.adDuration / 60)} minutes {streamConfig.adDuration % 60} seconds
-                        </p>
                       </div>
-                      <div>
-                        <Label htmlFor="scteEventId">SCTE Event ID</Label>
-                        <Input
-                          id="scteEventId"
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">SCTE Event ID</label>
+                        <input
+                          className="medialive-input"
                           type="number"
                           value={streamConfig.scteEventId}
                           onChange={(e) => setStreamConfig(prev => ({ ...prev, scteEventId: parseInt(e.target.value) }))}
                         />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Unique ID, increments sequentially
-                        </p>
                       </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="scteStartCommand">SCTE START Command</Label>
-                        <Select value={streamConfig.scteStartCommand} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, scteStartCommand: value }))}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="CUE-OUT">CUE-OUT</SelectItem>
-                            <SelectItem value="SPLICE_OUT">SPLICE_OUT</SelectItem>
-                            <SelectItem value="BREAK_START">BREAK_START</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Program out point
-                        </p>
-                      </div>
-                      <div>
-                        <Label htmlFor="scteStopCommand">SCTE STOP Command</Label>
-                        <Select value={streamConfig.scteStopCommand} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, scteStopCommand: value }))}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="CUE-IN">CUE-IN</SelectItem>
-                            <SelectItem value="SPLICE_IN">SPLICE_IN</SelectItem>
-                            <SelectItem value="BREAK_END">BREAK_END</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Program in point
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="crashOutCommand">Crash Out Command</Label>
-                        <Select value={streamConfig.crashOutCommand} onValueChange={(value) => setStreamConfig(prev => ({ ...prev, crashOutCommand: value }))}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="CUE-IN">CUE-IN</SelectItem>
-                            <SelectItem value="SPLICE_IN">SPLICE_IN</SelectItem>
-                            <SelectItem value="BREAK_END">BREAK_END</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Emergency return to program
-                        </p>
-                      </div>
-                      <div>
-                        <Label htmlFor="preRollDuration">Pre-roll Duration (seconds)</Label>
-                        <Input
-                          id="preRollDuration"
-                          type="number"
-                          min="0"
-                          max="10"
-                          value={streamConfig.preRollDuration}
-                          onChange={(e) => setStreamConfig(prev => ({ ...prev, preRollDuration: parseInt(e.target.value) }))}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Range: 0-10 seconds
-                        </p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="scteDataPidValue">SCTE Data PID Value</Label>
-                      <Input
-                        id="scteDataPidValue"
-                        type="number"
-                        value={streamConfig.scteDataPidValue}
-                        onChange={(e) => setStreamConfig(prev => ({ ...prev, scteDataPidValue: parseInt(e.target.value) }))}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Must match SCTE Data PID above
-                      </p>
                     </div>
                   </div>
 
-                  <div className="flex space-x-2">
-                    <Button 
-                      onClick={handleStartStream} 
-                      disabled={streamStatus.status === 'running' || !streamConfig.inputUrl || !streamConfig.outputUrl}
-                      className="flex-1"
+                  {/* Stream Control */}
+                  <div className="flex space-x-4 pt-4">
+                    <button
+                      onClick={handleStartStream}
+                      disabled={streamStatus.status === 'running' || streamStatus.status === 'starting'}
+                      className={`medialive-button medialive-button-primary flex-1 ${
+                        streamStatus.status === 'running' || streamStatus.status === 'starting' ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     >
                       <Play className="w-4 h-4 mr-2" />
                       Start Stream
-                    </Button>
-                    <Button 
-                      onClick={handleStopStream} 
-                      disabled={streamStatus.status !== 'running'}
-                      variant="outline"
-                      className="flex-1"
+                    </button>
+                    <button
+                      onClick={handleStopStream}
+                      disabled={streamStatus.status === 'stopped'}
+                      className={`medialive-button medialive-button-secondary flex-1 ${
+                        streamStatus.status === 'stopped' ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     >
                       <Square className="w-4 h-4 mr-2" />
                       Stop Stream
-                    </Button>
+                    </button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Stream Status</CardTitle>
-                  <CardDescription>Real-time stream monitoring</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span>Status</span>
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-3 h-3 rounded-full ${getStatusColor(streamStatus.status)}`} />
-                      <Badge variant="outline">{streamStatus.status.toUpperCase()}</Badge>
-                    </div>
+              {/* FFmpeg Command Builder */}
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Settings className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">FFmpeg Command Builder</h2>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Input Bitrate</Label>
-                      <div className="text-2xl font-bold">{streamStatus.inputBitrate} kbps</div>
-                    </div>
-                    <div>
-                      <Label>Output Bitrate</Label>
-                      <div className="text-2xl font-bold">{streamStatus.outputBitrate} kbps</div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Viewers</Label>
-                      <div className="text-2xl font-bold">{streamStatus.viewers}</div>
-                    </div>
-                    <div>
-                      <Label>Uptime</Label>
-                      <div className="text-2xl font-bold">{formatTime(streamStatus.uptime)}</div>
-                    </div>
-                  </div>
-
-                  {streamStatus.lastInjection && (
-                    <div>
-                      <Label>Last Injection</Label>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(streamStatus.lastInjection).toLocaleString()}
-                      </div>
-                    </div>
-                  )}
-
-                  {streamStatus.error && (
-                    <Alert variant="destructive">
-                      <AlertDescription>{streamStatus.error}</AlertDescription>
-                    </Alert>
-                  )}
-                </CardContent>
-              </Card>
+                  <p className="medialive-panel-subtitle mt-1">
+                    Generate FFmpeg commands for stream processing
+                  </p>
+                </div>
+                <div className="medialive-panel-content">
+                  <FFmpegCommandBuilder />
+                </div>
+              </div>
             </div>
           </TabsContent>
 
           <TabsContent value="injection" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Add Injection Point</CardTitle>
-                  <CardDescription>Schedule or trigger SCTE-35 injections</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="injectionTime">Time (seconds)</Label>
-                    <Input
-                      id="injectionTime"
-                      type="number"
-                      min="0"
-                      value={newInjection.time}
-                      onChange={(e) => setNewInjection(prev => ({ ...prev, time: parseInt(e.target.value) }))}
-                    />
+              {/* Injection Points */}
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Zap className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">Injection Points</h2>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    Schedule SCTE-35 injection points
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Time (seconds)</label>
+                      <input
+                        className="medialive-input"
+                        type="number"
+                        value={newInjection.time}
+                        onChange={(e) => setNewInjection(prev => ({ ...prev, time: parseInt(e.target.value) }))}
+                        min="0"
+                      />
+                    </div>
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Description</label>
+                      <input
+                        className="medialive-input"
+                        value={newInjection.description}
+                        onChange={(e) => setNewInjection(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Injection description"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="scte35Data">SCTE-35 Data (Base64)</Label>
-                    <Textarea
-                      id="scte35Data"
-                      placeholder="/DAvAAAAAAAAAP/wFAUAAAABf+/+AItfZn4AKTLgAAEAAAAWAhRDVUVJAAAAAX//AAApMuABACIBAIoXZrM="
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">SCTE-35 Data</label>
+                    <textarea
+                      className="medialive-textarea"
                       value={newInjection.scte35Data}
                       onChange={(e) => setNewInjection(prev => ({ ...prev, scte35Data: e.target.value }))}
+                      placeholder="Paste SCTE-35 data here..."
                       rows={3}
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Input
-                      id="description"
-                      placeholder="Ad break start"
-                      value={newInjection.description}
-                      onChange={(e) => setNewInjection(prev => ({ ...prev, description: e.target.value }))}
-                    />
-                  </div>
+                  <button
+                    onClick={handleAddInjection}
+                    disabled={!newInjection.scte35Data || newInjection.time < 0}
+                    className={`medialive-button medialive-button-primary w-full ${
+                      !newInjection.scte35Data || newInjection.time < 0 ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    Add Injection Point
+                  </button>
 
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="autoInject"
-                      checked={autoInject}
-                      onCheckedChange={setAutoInject}
-                    />
-                    <Label htmlFor="autoInject">Auto-inject at scheduled time</Label>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <Button onClick={handleAddInjection} className="flex-1">
-                      Add Injection Point
-                    </Button>
-                    <Button 
-                      onClick={() => handleInjectNow(newInjection.scte35Data)}
-                      disabled={!newInjection.scte35Data}
-                      variant="outline"
-                    >
-                      Inject Now
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Scheduled Injections</CardTitle>
-                  <CardDescription>Manage scheduled SCTE-35 injection points</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {/* Injection Points List */}
+                  <div className="space-y-2 max-h-64 overflow-y-auto medialive-scrollbar">
                     {injectionPoints.length === 0 ? (
-                      <div className="text-center text-muted-foreground py-8">
-                        No injection points scheduled
+                      <div className="text-center text-[#a0aec0] py-4">
+                        No injection points configured
                       </div>
                     ) : (
                       injectionPoints.map((injection) => (
-                        <div key={injection.id} className="flex items-center justify-between p-3 border rounded">
+                        <div key={injection.id} className="flex items-center justify-between p-3 bg-[#1a252f] border border-[#232f3e] rounded-lg">
                           <div className="flex-1">
-                            <div className="font-medium">{injection.description}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {formatTime(injection.time)} • {injection.active ? "Active" : "Inactive"}
+                            <div className="flex items-center justify-between">
+                              <span className="text-white font-medium">{injection.description}</span>
+                              <div className="flex items-center space-x-2">
+                                <Badge className={`medialive-badge ${injection.active ? 'medialive-badge-success' : 'medialive-badge-warning'}`}>
+                                  {injection.active ? 'Active' : 'Inactive'}
+                                </Badge>
+                                <Badge className="medialive-badge">{formatTime(injection.time)}</Badge>
+                              </div>
+                            </div>
+                            <div className="text-xs text-[#a0aec0] mt-1 font-mono">
+                              {injection.scte35Data.substring(0, 50)}...
                             </div>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              checked={injection.active}
-                              onCheckedChange={() => handleToggleInjection(injection.id)}
-                            />
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleInjectNow(injection.scte35Data)}
+                          <div className="flex items-center space-x-2 ml-4">
+                            <button
+                              onClick={() => handleToggleInjection(injection.id)}
+                              className={`medialive-button medialive-button-secondary text-xs ${
+                                injection.active ? 'opacity-50' : ''
+                              }`}
                             >
-                              Inject
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
+                              {injection.active ? 'Disable' : 'Enable'}
+                            </button>
+                            <button
+                              onClick={() => handleInjectNow(injection.scte35Data)}
+                              disabled={!injection.active}
+                              className={`medialive-button medialive-button-primary text-xs ${
+                                !injection.active ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
+                            >
+                              Inject Now
+                            </button>
+                            <button
                               onClick={() => handleRemoveInjection(injection.id)}
+                              className="medialive-button medialive-button-secondary text-xs"
                             >
                               Remove
-                            </Button>
+                            </button>
                           </div>
                         </div>
                       ))
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
+
+              {/* Auto Injection Settings */}
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Network className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">Auto Injection</h2>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    Configure automatic SCTE-35 injection
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-white font-medium">Enable Auto Injection</span>
+                      <p className="text-sm text-[#a0aec0] mt-1">
+                        Automatically inject SCTE-35 cues at scheduled times
+                      </p>
+                    </div>
+                    <Switch
+                      checked={autoInject}
+                      onCheckedChange={setAutoInject}
+                    />
+                  </div>
+
+                  {autoInject && (
+                    <div className="space-y-4 border-t border-[#232f3e] pt-4">
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">Pre-roll Duration (seconds)</label>
+                        <input
+                          className="medialive-input"
+                          type="number"
+                          value={streamConfig.preRollDuration}
+                          onChange={(e) => setStreamConfig(prev => ({ ...prev, preRollDuration: parseInt(e.target.value) }))}
+                          min="0"
+                        />
+                      </div>
+
+                      <div className="medialive-form-row">
+                        <div className="medialive-form-group">
+                          <label className="medialive-form-label">Start Command</label>
+                          <input
+                            className="medialive-input"
+                            value={streamConfig.scteStartCommand}
+                            onChange={(e) => setStreamConfig(prev => ({ ...prev, scteStartCommand: e.target.value }))}
+                          />
+                        </div>
+                        <div className="medialive-form-group">
+                          <label className="medialive-form-label">Stop Command</label>
+                          <input
+                            className="medialive-input"
+                            value={streamConfig.scteStopCommand}
+                            onChange={(e) => setStreamConfig(prev => ({ ...prev, scteStopCommand: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">Crash Out Command</label>
+                        <input
+                          className="medialive-input"
+                          value={streamConfig.crashOutCommand}
+                          onChange={(e) => setStreamConfig(prev => ({ ...prev, crashOutCommand: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Stream Status */}
+                  <div className="space-y-4 border-t border-[#232f3e] pt-4">
+                    <div className="flex items-center space-x-2">
+                      <Monitor className="w-4 h-4 text-[#ff9900]" />
+                      <h3 className="text-lg font-semibold text-white">Stream Status</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-white">{streamStatus.inputBitrate}</div>
+                        <div className="text-sm text-[#a0aec0]">Input Bitrate (kbps)</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-white">{streamStatus.outputBitrate}</div>
+                        <div className="text-sm text-[#a0aec0]">Output Bitrate (kbps)</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-white">{streamStatus.viewers}</div>
+                        <div className="text-sm text-[#a0aec0]">Viewers</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-white">{formatTime(streamStatus.uptime)}</div>
+                        <div className="text-sm text-[#a0aec0]">Uptime</div>
+                      </div>
+                    </div>
+                    {streamStatus.lastInjection && (
+                      <div className="text-center">
+                        <div className="text-sm text-[#a0aec0]">Last Injection</div>
+                        <div className="text-white">{new Date(streamStatus.lastInjection).toLocaleString()}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </TabsContent>
 
           <TabsContent value="monitor" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Stream Monitor</CardTitle>
-                <CardDescription>Real-time stream analysis and SCTE-35 detection</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="text-center p-4 border rounded">
-                      <div className="text-2xl font-bold text-green-600">{streamStatus.inputBitrate}</div>
-                      <div className="text-sm text-muted-foreground">Input Bitrate (kbps)</div>
+            {/* Stream Monitoring */}
+            <div className="medialive-panel rounded-lg">
+              <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                <div className="flex items-center space-x-2">
+                  <Monitor className="w-5 h-5 text-[#ff9900]" />
+                  <h2 className="medialive-panel-title">Stream Monitor</h2>
+                </div>
+                <p className="medialive-panel-subtitle mt-1">
+                  Real-time monitoring of stream health and SCTE-35 activity
+                </p>
+              </div>
+              <div className="medialive-panel-content">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#232f3e] to-[#1a252f] rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Network className="w-8 h-8 text-[#ff9900]" />
                     </div>
-                    <div className="text-center p-4 border rounded">
-                      <div className="text-2xl font-bold text-blue-600">{streamStatus.outputBitrate}</div>
-                      <div className="text-sm text-muted-foreground">Output Bitrate (kbps)</div>
-                    </div>
-                    <div className="text-center p-4 border rounded">
-                      <div className="text-2xl font-bold text-purple-600">{injectionPoints.length}</div>
-                      <div className="text-sm text-muted-foreground">Active Injections</div>
-                    </div>
+                    <div className="text-2xl font-bold text-white">{streamStatus.inputBitrate}</div>
+                    <div className="text-sm text-[#a0aec0]">Input Bitrate (kbps)</div>
                   </div>
-                  
-                  <div className="bg-muted p-4 rounded">
-                    <h4 className="font-medium mb-2">Recent SCTE-35 Activity</h4>
-                    <div className="space-y-2">
-                      {streamStatus.lastInjection ? (
-                        <div className="text-sm">
-                          Last injection: {new Date(streamStatus.lastInjection).toLocaleString()}
-                        </div>
-                      ) : (
-                        <div className="text-sm text-muted-foreground">No recent SCTE-35 activity</div>
-                      )}
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#232f3e] to-[#1a252f] rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Zap className="w-8 h-8 text-[#ff9900]" />
                     </div>
+                    <div className="text-2xl font-bold text-white">{streamStatus.outputBitrate}</div>
+                    <div className="text-sm text-[#a0aec0]">Output Bitrate (kbps)</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#232f3e] to-[#1a252f] rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Activity className="w-8 h-8 text-[#ff9900]" />
+                    </div>
+                    <div className="text-2xl font-bold text-white">{streamStatus.viewers}</div>
+                    <div className="text-sm text-[#a0aec0]">Viewers</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#232f3e] to-[#1a252f] rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <Shield className="w-8 h-8 text-[#ff9900]" />
+                    </div>
+                    <div className="text-2xl font-bold text-white">{formatTime(streamStatus.uptime)}</div>
+                    <div className="text-sm text-[#a0aec0]">Uptime</div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="encoder" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick SCTE-35 Encoder</CardTitle>
-                <CardDescription>Generate SCTE-35 cues for injection</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="eventType">Event Type</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select event type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ad-start">Ad Break Start</SelectItem>
-                        <SelectItem value="ad-end">Ad Break End</SelectItem>
-                        <SelectItem value="program-start">Program Start</SelectItem>
-                        <SelectItem value="program-end">Program End</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="duration">Duration (seconds)</Label>
-                    <Input type="number" placeholder="30" />
-                  </div>
+            {/* SCTE-35 Encoder */}
+            <div className="medialive-panel rounded-lg">
+              <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                <div className="flex items-center space-x-2">
+                  <Zap className="w-5 h-5 text-[#ff9900]" />
+                  <h2 className="medialive-panel-title">SCTE-35 Encoder</h2>
                 </div>
-                
-                <div>
-                  <Label htmlFor="cueId">Cue ID</Label>
-                  <Input placeholder="1" />
-                </div>
-                
-                <Button className="w-full">
-                  Generate SCTE-35
-                </Button>
-                
-                {scte35Encoded && (
-                  <div className="space-y-2">
-                    <Label>Generated SCTE-35 Data</Label>
-                    <Textarea value={scte35Encoded} readOnly rows={3} />
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline">
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleInjectNow(scte35Encoded)}>
-                        <Play className="w-4 h-4 mr-2" />
-                        Inject Now
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <FFmpegCommandBuilder />
+                <p className="medialive-panel-subtitle mt-1">
+                  Quick access to SCTE-35 encoding functionality
+                </p>
+              </div>
+              <div className="medialive-panel-content text-center">
+                <p className="text-[#a0aec0] mb-4">
+                  Use the dedicated SCTE-35 Encoder page for comprehensive encoding options
+                </p>
+                <Link href="/encoder">
+                  <Button className="medialive-button medialive-button-primary">
+                    Open SCTE-35 Encoder
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

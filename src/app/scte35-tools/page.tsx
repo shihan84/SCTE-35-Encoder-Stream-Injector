@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Upload, Download, FileVideo, Radio, Settings } from "lucide-react";
+import { ArrowLeft, Upload, Download, FileVideo, Radio, Settings, Zap, Activity, Monitor, Database, Network } from "lucide-react";
 import FFmpegCommandBuilder from "@/components/ffmpeg-command-builder";
 
 export default function SCTE35Tools() {
@@ -102,58 +102,77 @@ export default function SCTE35Tools() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center space-x-4">
-          <Link href="/">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">SCTE-35 Tools</h1>
-            <p className="text-muted-foreground">
-              Professional tools for SCTE-35 conversion, analysis, and FFmpeg integration
-            </p>
+    <div className="medialive-container">
+      {/* AWS MediaLive-style Header */}
+      <div className="bg-gradient-to-r from-[#16191f] to-[#0f1419] border-b border-[#232f3e] px-6 py-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Link href="/">
+                <Button variant="outline" size="sm" className="medialive-button medialive-button-secondary">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Home
+                </Button>
+              </Link>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-[#ff9900] to-[#ff8800] rounded-lg flex items-center justify-center">
+                  <Settings className="w-5 h-5 text-[#0f1419]" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white">SCTE-35 Tools</h1>
+                  <p className="text-sm text-[#a0aec0]">AWS Elemental MediaLive Compatible</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="medialive-status-indicator medialive-status-running"></div>
+                <span className="text-sm text-[#a0aec0]">System Active</span>
+              </div>
+              <Badge className="medialive-badge medialive-badge-success">PRODUCTION READY</Badge>
+            </div>
           </div>
         </div>
+      </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="medialive-tabs">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="converter">Data Converter</TabsTrigger>
-            <TabsTrigger value="analyzer">Analyzer</TabsTrigger>
-            <TabsTrigger value="generator">Generator</TabsTrigger>
-            <TabsTrigger value="ffmpeg">FFmpeg Tools</TabsTrigger>
+            <TabsTrigger value="converter" className="medialive-tab">Data Converter</TabsTrigger>
+            <TabsTrigger value="analyzer" className="medialive-tab">Analyzer</TabsTrigger>
+            <TabsTrigger value="generator" className="medialive-tab">Generator</TabsTrigger>
+            <TabsTrigger value="ffmpeg" className="medialive-tab">FFmpeg Tools</TabsTrigger>
           </TabsList>
 
           <TabsContent value="converter" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Upload className="w-5 h-5" />
-                    <span>Input Data</span>
-                  </CardTitle>
-                  <CardDescription>
+              {/* Input Panel */}
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Upload className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">Input Data</h2>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
                     Convert SCTE-35 data between different formats
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="fileUpload">Upload SCTE-35 File</Label>
-                    <Input
-                      id="fileUpload"
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Upload SCTE-35 File</label>
+                    <input
                       type="file"
                       accept=".bin,.b64,.hex,.json"
                       onChange={handleFileUpload}
+                      className="medialive-input"
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="inputFormat">Input Format</Label>
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Input Format</label>
                     <Select value={inputFormat} onValueChange={(value: any) => setInputFormat(value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="medialive-select">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -164,44 +183,44 @@ export default function SCTE35Tools() {
                     </Select>
                   </div>
 
-                  <div>
-                    <Label htmlFor="inputData">Input Data</Label>
-                    <Textarea
-                      id="inputData"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Input Data</label>
+                    <textarea
                       value={inputData}
                       onChange={(e) => setInputData(e.target.value)}
                       placeholder="Paste SCTE-35 data here..."
                       rows={8}
-                      className="font-mono text-sm"
+                      className="medialive-textarea medialive-scrollbar font-mono text-sm"
                     />
                   </div>
 
                   <div className="flex space-x-2">
-                    <Button onClick={generateSampleData} variant="outline" size="sm">
+                    <button onClick={generateSampleData} className="medialive-button medialive-button-secondary">
                       Load Sample
-                    </Button>
-                    <Button onClick={handleConvert} disabled={!inputData} className="flex-1">
+                    </button>
+                    <button onClick={handleConvert} disabled={!inputData} className={`medialive-button medialive-button-primary flex-1 ${!inputData ? 'opacity-50 cursor-not-allowed' : ''}`}>
                       Convert
-                    </Button>
+                    </button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Download className="w-5 h-5" />
-                    <span>Output Data</span>
-                  </CardTitle>
-                  <CardDescription>
+              {/* Output Panel */}
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Download className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">Output Data</h2>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
                     Converted SCTE-35 data in selected format
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="outputFormat">Output Format</Label>
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Output Format</label>
                     <Select value={outputFormat} onValueChange={(value: any) => setOutputFormat(value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="medialive-select">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -213,130 +232,158 @@ export default function SCTE35Tools() {
                     </Select>
                   </div>
 
-                  <div>
-                    <Label htmlFor="outputData">Output Data</Label>
-                    <Textarea
-                      id="outputData"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Output Data</label>
+                    <textarea
                       value={outputData}
                       readOnly
                       placeholder="Converted data will appear here..."
                       rows={8}
-                      className="font-mono text-sm"
+                      className="medialive-textarea medialive-scrollbar font-mono text-sm"
                     />
                   </div>
 
                   {outputData && (
                     <div className="flex justify-between items-center">
-                      <Badge variant="outline">
+                      <Badge className="medialive-badge">
                         {outputData.length} characters
                       </Badge>
-                      <Button onClick={downloadOutput} variant="outline" size="sm">
+                      <button onClick={downloadOutput} className="medialive-button medialive-button-secondary">
                         <Download className="w-4 h-4 mr-2" />
                         Download
-                      </Button>
+                      </button>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </TabsContent>
 
           <TabsContent value="analyzer" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>SCTE-35 Analyzer</CardTitle>
-                <CardDescription>
+            <div className="medialive-panel rounded-lg">
+              <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                <div className="flex items-center space-x-2">
+                  <Activity className="w-5 h-5 text-[#ff9900]" />
+                  <h2 className="medialive-panel-title">SCTE-35 Analyzer</h2>
+                </div>
+                <p className="medialive-panel-subtitle mt-1">
                   Parse and analyze SCTE-35 data structure
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="analyzeData">SCTE-35 Data (Base64)</Label>
-                    <Textarea
-                      id="analyzeData"
-                      placeholder="Paste SCTE-35 data to analyze..."
-                      rows={6}
-                      className="font-mono text-sm"
-                    />
-                  </div>
-                  
-                  <Button>Analyze SCTE-35</Button>
-                  
-                  <div className="bg-muted p-4 rounded">
-                    <h4 className="font-medium mb-2">Analysis Results</h4>
-                    <div className="space-y-2 text-sm">
-                      <div>Table ID: 0xFC</div>
-                      <div>Section Length: 42 bytes</div>
-                      <div>Protocol Version: 0</div>
-                      <div>Command Type: Splice Insert (5)</div>
-                      <div>Splice Event ID: 1</div>
-                      <div>Out of Network: false</div>
-                      <div>Program Splice: true</div>
-                      <div>Duration Flag: false</div>
+                </p>
+              </div>
+              <div className="medialive-panel-content space-y-4">
+                <div className="medialive-form-group">
+                  <label className="medialive-form-label">SCTE-35 Data (Base64)</label>
+                  <textarea
+                    placeholder="Paste SCTE-35 data to analyze..."
+                    rows={6}
+                    className="medialive-textarea medialive-scrollbar font-mono text-sm"
+                  />
+                </div>
+                
+                <button className="medialive-button medialive-button-primary">
+                  Analyze SCTE-35
+                </button>
+                
+                <div className="bg-[#1a252f] border border-[#232f3e] rounded-lg p-4">
+                  <h4 className="font-medium text-white mb-3">Analysis Results</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-[#a0aec0]">Table ID</span>
+                      <span className="text-white">0xFC</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#a0aec0]">Section Length</span>
+                      <span className="text-white">42 bytes</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#a0aec0]">Protocol Version</span>
+                      <span className="text-white">0</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#a0aec0]">Command Type</span>
+                      <Badge className="medialive-badge">Splice Insert (5)</Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#a0aec0]">Splice Event ID</span>
+                      <span className="text-white">1</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#a0aec0]">Out of Network</span>
+                      <Badge className="medialive-badge medialive-badge-success">false</Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#a0aec0]">Program Splice</span>
+                      <Badge className="medialive-badge medialive-badge-success">true</Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#a0aec0]">Duration Flag</span>
+                      <Badge className="medialive-badge medialive-badge-success">false</Badge>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="generator" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>SCTE-35 Generator</CardTitle>
-                <CardDescription>
+            <div className="medialive-panel rounded-lg">
+              <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                <div className="flex items-center space-x-2">
+                  <Radio className="w-5 h-5 text-[#ff9900]" />
+                  <h2 className="medialive-panel-title">SCTE-35 Generator</h2>
+                </div>
+                <p className="medialive-panel-subtitle mt-1">
                   Generate SCTE-35 cues for common scenarios
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div className="medialive-panel-content space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Ad Break Templates</h3>
+                    <h3 className="text-lg font-semibold text-white">Ad Break Templates</h3>
                     
                     <div className="space-y-2">
-                      <Button variant="outline" className="w-full justify-start">
+                      <button className="medialive-button medialive-button-secondary w-full justify-start">
                         <FileVideo className="w-4 h-4 mr-2" />
                         Pre-roll Ad (30s)
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
+                      </button>
+                      <button className="medialive-button medialive-button-secondary w-full justify-start">
                         <FileVideo className="w-4 h-4 mr-2" />
                         Mid-roll Ad (60s)
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
+                      </button>
+                      <button className="medialive-button medialive-button-secondary w-full justify-start">
                         <FileVideo className="w-4 h-4 mr-2" />
                         Post-roll Ad (15s)
-                      </Button>
+                      </button>
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Program Templates</h3>
+                    <h3 className="text-lg font-semibold text-white">Program Templates</h3>
                     
                     <div className="space-y-2">
-                      <Button variant="outline" className="w-full justify-start">
+                      <button className="medialive-button medialive-button-secondary w-full justify-start">
                         <Radio className="w-4 h-4 mr-2" />
                         Program Start
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
+                      </button>
+                      <button className="medialive-button medialive-button-secondary w-full justify-start">
                         <Radio className="w-4 h-4 mr-2" />
                         Program End
-                      </Button>
-                      <Button variant="outline" className="w-full justify-start">
+                      </button>
+                      <button className="medialive-button medialive-button-secondary w-full justify-start">
                         <Settings className="w-4 h-4 mr-2" />
                         Time Signal
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold mb-4">Custom Generator</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label>Event Type</Label>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-white">Custom Generator</h3>
+                  <div className="medialive-form-row-3">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Event Type</label>
                       <Select>
-                        <SelectTrigger>
+                        <SelectTrigger className="medialive-select">
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -345,20 +392,22 @@ export default function SCTE35Tools() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
-                      <Label>Duration (seconds)</Label>
-                      <Input type="number" placeholder="30" />
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Duration (seconds)</label>
+                      <input type="number" placeholder="30" className="medialive-input" />
                     </div>
-                    <div>
-                      <Label>Event ID</Label>
-                      <Input type="number" placeholder="1" />
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Event ID</label>
+                      <input type="number" placeholder="1" className="medialive-input" />
                     </div>
                   </div>
                   
-                  <Button className="mt-4">Generate Custom SCTE-35</Button>
+                  <button className="medialive-button medialive-button-primary">
+                    Generate Custom SCTE-35
+                  </button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="ffmpeg" className="space-y-6">

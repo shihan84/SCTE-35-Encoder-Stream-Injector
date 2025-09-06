@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Settings, Broadcast, Zap, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Settings, Broadcast, Zap, AlertTriangle, Copy, Download, Database, Network, Shield } from "lucide-react";
 
 interface DistributorStreamConfig {
   // Stream Identification
@@ -148,7 +148,7 @@ pbkeylen=16
 passphrase=your_secure_passphrase
 maxbw=${cfg.videoBitrate + 128}  # Video + Audio bitrate in kbps
 minbw=0
- overhead=25
+overhead=25
 mssrap=1316
 pkt_size=1316
 rcvbuf=8192000
@@ -193,74 +193,106 @@ CRASH_OUT_COMMAND=${cfg.crashOutCommand}`;
     navigator.clipboard.writeText(text);
   };
 
+  const downloadConfig = (text: string, filename: string) => {
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const formatLKFS = (value: number) => {
     return `${value} dB`;
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center space-x-4">
-          <Link href="/">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Distributor Configuration</h1>
-            <p className="text-muted-foreground">
-              Configure stream settings according to distributor specifications
-            </p>
+    <div className="medialive-container">
+      {/* AWS MediaLive-style Header */}
+      <div className="bg-gradient-to-r from-[#16191f] to-[#0f1419] border-b border-[#232f3e] px-6 py-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Link href="/">
+                <Button variant="outline" size="sm" className="medialive-button medialive-button-secondary">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Home
+                </Button>
+              </Link>
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-[#ff9900] to-[#ff8800] rounded-lg flex items-center justify-center">
+                  <Settings className="w-5 h-5 text-[#0f1419]" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Distributor Configuration</h1>
+                  <p className="text-sm text-[#a0aec0]">AWS Elemental MediaLive Compatible</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="medialive-status-indicator medialive-status-running"></div>
+                <span className="text-sm text-[#a0aec0]">System Active</span>
+              </div>
+              <Badge className="medialive-badge medialive-badge-success">PRODUCTION READY</Badge>
+            </div>
           </div>
         </div>
+      </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="medialive-tabs">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="stream-config">Stream Config</TabsTrigger>
-            <TabsTrigger value="scte35-config">SCTE-35 Config</TabsTrigger>
-            <TabsTrigger value="generated">Generated Config</TabsTrigger>
+            <TabsTrigger value="stream-config" className="medialive-tab">Stream Config</TabsTrigger>
+            <TabsTrigger value="scte35-config" className="medialive-tab">SCTE-35 Config</TabsTrigger>
+            <TabsTrigger value="generated" className="medialive-tab">Generated Config</TabsTrigger>
           </TabsList>
 
           <TabsContent value="stream-config" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Stream Identification */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Broadcast className="w-5 h-5" />
-                    <span>Stream Identification</span>
-                  </CardTitle>
-                  <CardDescription>Basic stream identification parameters</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="streamName">Stream Name</Label>
-                    <Input
-                      id="streamName"
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Broadcast className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">Stream Identification</h2>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    Basic stream identification parameters
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Stream Name</label>
+                    <input
+                      className="medialive-input"
                       value={config.streamName}
                       onChange={(e) => setConfig(prev => ({ ...prev, streamName: e.target.value }))}
                       placeholder="Live_Service"
                     />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Video Specifications */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Zap className="w-5 h-5" />
-                    <span>Video Specifications</span>
-                  </CardTitle>
-                  <CardDescription>Video encoding parameters as per distributor requirements</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="videoResolution">Video Resolution</Label>
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Zap className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">Video Specifications</h2>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    Video encoding parameters as per distributor requirements
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Video Resolution</label>
                       <Select value={config.videoResolution} onValueChange={(value) => setConfig(prev => ({ ...prev, videoResolution: value }))}>
-                        <SelectTrigger>
+                        <SelectTrigger className="medialive-select">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -270,10 +302,10 @@ CRASH_OUT_COMMAND=${cfg.crashOutCommand}`;
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
-                      <Label htmlFor="videoCodec">Video Codec</Label>
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Video Codec</label>
                       <Select value={config.videoCodec} onValueChange={(value) => setConfig(prev => ({ ...prev, videoCodec: value }))}>
-                        <SelectTrigger>
+                        <SelectTrigger className="medialive-select">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -284,11 +316,11 @@ CRASH_OUT_COMMAND=${cfg.crashOutCommand}`;
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="pcr">PCR</Label>
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">PCR</label>
                       <Select value={config.pcr} onValueChange={(value) => setConfig(prev => ({ ...prev, pcr: value }))}>
-                        <SelectTrigger>
+                        <SelectTrigger className="medialive-select">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -297,10 +329,10 @@ CRASH_OUT_COMMAND=${cfg.crashOutCommand}`;
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
-                      <Label htmlFor="profileLevel">Profile@Level</Label>
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Profile@Level</label>
                       <Select value={config.profileLevel} onValueChange={(value) => setConfig(prev => ({ ...prev, profileLevel: value }))}>
-                        <SelectTrigger>
+                        <SelectTrigger className="medialive-select">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -313,20 +345,20 @@ CRASH_OUT_COMMAND=${cfg.crashOutCommand}`;
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="gop">GOP</Label>
-                      <Input
-                        id="gop"
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">GOP</label>
+                      <input
+                        className="medialive-input"
                         type="number"
                         value={config.gop}
                         onChange={(e) => setConfig(prev => ({ ...prev, gop: parseInt(e.target.value) }))}
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="bFrames">No of B Frames</Label>
-                      <Input
-                        id="bFrames"
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">No of B Frames</label>
+                      <input
+                        className="medialive-input"
                         type="number"
                         value={config.bFrames}
                         onChange={(e) => setConfig(prev => ({ ...prev, bFrames: parseInt(e.target.value) }))}
@@ -334,20 +366,20 @@ CRASH_OUT_COMMAND=${cfg.crashOutCommand}`;
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="videoBitrate">Video Bitrate (kbps)</Label>
-                      <Input
-                        id="videoBitrate"
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Video Bitrate (kbps)</label>
+                      <input
+                        className="medialive-input"
                         type="number"
                         value={config.videoBitrate}
                         onChange={(e) => setConfig(prev => ({ ...prev, videoBitrate: parseInt(e.target.value) }))}
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="chroma">Chroma</Label>
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Chroma</label>
                       <Select value={config.chroma} onValueChange={(value) => setConfig(prev => ({ ...prev, chroma: value }))}>
-                        <SelectTrigger>
+                        <SelectTrigger className="medialive-select">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -359,10 +391,10 @@ CRASH_OUT_COMMAND=${cfg.crashOutCommand}`;
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="aspectRatio">Aspect Ratio</Label>
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Aspect Ratio</label>
                     <Select value={config.aspectRatio} onValueChange={(value) => setConfig(prev => ({ ...prev, aspectRatio: value }))}>
-                      <SelectTrigger>
+                      <SelectTrigger className="medialive-select">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -372,24 +404,26 @@ CRASH_OUT_COMMAND=${cfg.crashOutCommand}`;
                       </SelectContent>
                     </Select>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Audio Specifications */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Settings className="w-5 h-5" />
-                    <span>Audio Specifications</span>
-                  </CardTitle>
-                  <CardDescription>Audio encoding parameters as per distributor requirements</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="audioCodec">Audio Codec</Label>
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Settings className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">Audio Specifications</h2>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    Audio encoding parameters as per distributor requirements
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Audio Codec</label>
                       <Select value={config.audioCodec} onValueChange={(value) => setConfig(prev => ({ ...prev, audioCodec: value }))}>
-                        <SelectTrigger>
+                        <SelectTrigger className="medialive-select">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -399,10 +433,10 @@ CRASH_OUT_COMMAND=${cfg.crashOutCommand}`;
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
-                      <Label htmlFor="audioBitrate">Audio Bitrate (kbps)</Label>
-                      <Input
-                        id="audioBitrate"
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Audio Bitrate (kbps)</label>
+                      <input
+                        className="medialive-input"
                         type="number"
                         value={config.audioBitrate}
                         onChange={(e) => setConfig(prev => ({ ...prev, audioBitrate: parseInt(e.target.value) }))}
@@ -410,23 +444,23 @@ CRASH_OUT_COMMAND=${cfg.crashOutCommand}`;
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="audioLKFS">Audio LKFS</Label>
-                      <Input
-                        id="audioLKFS"
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Audio LKFS</label>
+                      <input
+                        className="medialive-input"
                         type="number"
                         value={config.audioLKFS}
                         onChange={(e) => setConfig(prev => ({ ...prev, audioLKFS: parseInt(e.target.value) }))}
                       />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {formatLKFS(config.audioLKFS)}
+                      <p className="text-xs text-[#a0aec0] mt-1">
+                        Target loudness level in dB LKFS
                       </p>
                     </div>
-                    <div>
-                      <Label htmlFor="audioSamplingRate">Audio Sampling Rate</Label>
-                      <Select value={config.audioSamplingRate.toString()} onValueChange={(value) => setConfig(prev => ({ ...prev, audioSamplingRate: parseInt(value) }))}>
-                        <SelectTrigger>
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Audio Sampling Rate</label>
+                      <Select value={config.audioSamplingRate} onValueChange={(value) => setConfig(prev => ({ ...prev, audioSamplingRate: parseInt(value) }))}>
+                        <SelectTrigger className="medialive-select">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -437,33 +471,35 @@ CRASH_OUT_COMMAND=${cfg.crashOutCommand}`;
                       </Select>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* SCTE-35 Configuration */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <AlertTriangle className="w-5 h-5" />
-                    <span>SCTE-35 Configuration</span>
-                  </CardTitle>
-                  <CardDescription>SCTE-35 and transport stream parameters</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="scteDataPid">SCTE Data PID</Label>
-                      <Input
-                        id="scteDataPid"
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <AlertTriangle className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">SCTE-35 Configuration</h2>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    SCTE-35 injection parameters for ad insertion
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">SCTE-35 Data PID</label>
+                      <input
+                        className="medialive-input"
                         type="number"
                         value={config.scteDataPid}
                         onChange={(e) => setConfig(prev => ({ ...prev, scteDataPid: parseInt(e.target.value) }))}
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="nullPid">Null PID</Label>
-                      <Input
-                        id="nullPid"
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Null PID</label>
+                      <input
+                        className="medialive-input"
                         type="number"
                         value={config.nullPid}
                         onChange={(e) => setConfig(prev => ({ ...prev, nullPid: parseInt(e.target.value) }))}
@@ -471,214 +507,301 @@ CRASH_OUT_COMMAND=${cfg.crashOutCommand}`;
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="latency">Latency (milliseconds)</Label>
-                    <Input
-                      id="latency"
-                      type="number"
-                      value={config.latency}
-                      onChange={(e) => setConfig(prev => ({ ...prev, latency: parseInt(e.target.value) }))}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {config.latency / 1000} seconds
-                    </p>
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Latency (ms)</label>
+                      <input
+                        className="medialive-input"
+                        type="number"
+                        value={config.latency}
+                        onChange={(e) => setConfig(prev => ({ ...prev, latency: parseInt(e.target.value) }))}
+                      />
+                    </div>
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">SCTE-35 Event ID</label>
+                      <input
+                        className="medialive-input"
+                        type="number"
+                        value={config.scteEventId}
+                        onChange={(e) => setConfig(prev => ({ ...prev, scteEventId: parseInt(e.target.value) }))}
+                      />
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
+
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Start Command</label>
+                      <input
+                        className="medialive-input"
+                        value={config.scteStartCommand}
+                        onChange={(e) => setConfig(prev => ({ ...prev, scteStartCommand: e.target.value }))}
+                      />
+                    </div>
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Stop Command</label>
+                      <input
+                        className="medialive-input"
+                        value={config.scteStopCommand}
+                        onChange={(e) => setConfig(prev => ({ ...prev, scteStopCommand: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Crash Out Command</label>
+                      <input
+                        className="medialive-input"
+                        value={config.crashOutCommand}
+                        onChange={(e) => setConfig(prev => ({ ...prev, crashOutCommand: e.target.value }))}
+                      />
+                    </div>
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Ad Duration (seconds)</label>
+                      <input
+                        className="medialive-input"
+                        type="number"
+                        value={config.adDuration}
+                        onChange={(e) => setConfig(prev => ({ ...prev, adDuration: parseInt(e.target.value) }))}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </TabsContent>
 
           <TabsContent value="scte35-config" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>SCTE-35 Event Configuration</CardTitle>
-                <CardDescription>Configure SCTE-35 event parameters as per distributor requirements</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="adDuration">Ad Duration (seconds)</Label>
-                    <Input
-                      id="adDuration"
-                      type="number"
-                      value={config.adDuration}
-                      onChange={(e) => setConfig(prev => ({ ...prev, adDuration: parseInt(e.target.value) }))}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {Math.floor(config.adDuration / 60)} minutes {config.adDuration % 60} seconds
-                    </p>
+            <div className="medialive-panel rounded-lg">
+              <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="w-5 h-5 text-[#ff9900]" />
+                  <h2 className="medialive-panel-title">SCTE-35 Event Configuration</h2>
+                </div>
+                <p className="medialive-panel-subtitle mt-1">
+                  Configure SCTE-35 event parameters for ad insertion
+                </p>
+              </div>
+              <div className="medialive-panel-content space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white">Event Timing</h3>
+                    <div className="medialive-form-row">
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">Pre-roll Duration (seconds)</label>
+                        <input
+                          className="medialive-input"
+                          type="number"
+                          value={config.preRollDuration}
+                          onChange={(e) => setConfig(prev => ({ ...prev, preRollDuration: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">Ad Duration (seconds)</label>
+                        <input
+                          className="medialive-input"
+                          type="number"
+                          value={config.adDuration}
+                          onChange={(e) => setConfig(prev => ({ ...prev, adDuration: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="scteEventId">SCTE Event ID</Label>
-                    <Input
-                      id="scteEventId"
-                      type="number"
-                      value={config.scteEventId}
-                      onChange={(e) => setConfig(prev => ({ ...prev, scteEventId: parseInt(e.target.value) }))}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Unique ID, increments sequentially
-                    </p>
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white">Event Identification</h3>
+                    <div className="medialive-form-row">
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">SCTE-35 Event ID</label>
+                        <input
+                          className="medialive-input"
+                          type="number"
+                          value={config.scteEventId}
+                          onChange={(e) => setConfig(prev => ({ ...prev, scteEventId: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                      <div className="medialive-form-group">
+                        <label className="medialive-form-label">SCTE-35 Data PID Value</label>
+                        <input
+                          className="medialive-input"
+                          type="number"
+                          value={config.scteDataPidValue}
+                          onChange={(e) => setConfig(prev => ({ ...prev, scteDataPidValue: parseInt(e.target.value) }))}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="scteStartCommand">SCTE START Command</Label>
-                    <Select value={config.scteStartCommand} onValueChange={(value) => setConfig(prev => ({ ...prev, scteStartCommand: value }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="CUE-OUT">CUE-OUT</SelectItem>
-                        <SelectItem value="SPLICE_OUT">SPLICE_OUT</SelectItem>
-                        <SelectItem value="BREAK_START">BREAK_START</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Program out point
-                    </p>
-                  </div>
-                  <div>
-                    <Label htmlFor="scteStopCommand">SCTE STOP Command</Label>
-                    <Select value={config.scteStopCommand} onValueChange={(value) => setConfig(prev => ({ ...prev, scteStopCommand: value }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="CUE-IN">CUE-IN</SelectItem>
-                        <SelectItem value="SPLICE_IN">SPLICE_IN</SelectItem>
-                        <SelectItem value="BREAK_END">BREAK_END</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Program in point
-                    </p>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-white">Event Commands</h3>
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Start Command</label>
+                      <input
+                        className="medialive-input"
+                        value={config.scteStartCommand}
+                        onChange={(e) => setConfig(prev => ({ ...prev, scteStartCommand: e.target.value }))}
+                      />
+                    </div>
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Stop Command</label>
+                      <input
+                        className="medialive-input"
+                        value={config.scteStopCommand}
+                        onChange={(e) => setConfig(prev => ({ ...prev, scteStopCommand: e.target.value }))}
+                      />
+                    </div>
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Crash Out Command</label>
+                      <input
+                        className="medialive-input"
+                        value={config.crashOutCommand}
+                        onChange={(e) => setConfig(prev => ({ ...prev, crashOutCommand: e.target.value }))}
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="crashOutCommand">Crash Out Command</Label>
-                    <Select value={config.crashOutCommand} onValueChange={(value) => setConfig(prev => ({ ...prev, crashOutCommand: value }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="CUE-IN">CUE-IN</SelectItem>
-                        <SelectItem value="SPLICE_IN">SPLICE_IN</SelectItem>
-                        <SelectItem value="BREAK_END">BREAK_END</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Emergency return to program
-                    </p>
-                  </div>
-                  <div>
-                    <Label htmlFor="preRollDuration">Pre-roll Duration (seconds)</Label>
-                    <Input
-                      id="preRollDuration"
-                      type="number"
-                      min="0"
-                      max="10"
-                      value={config.preRollDuration}
-                      onChange={(e) => setConfig(prev => ({ ...prev, preRollDuration: parseInt(e.target.value) }))}
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Range: 0-10 seconds
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="scteDataPidValue">SCTE Data PID Value</Label>
-                  <Input
-                    id="scteDataPidValue"
-                    type="number"
-                    value={config.scteDataPidValue}
-                    onChange={(e) => setConfig(prev => ({ ...prev, scteDataPidValue: parseInt(e.target.value) }))}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Must match SCTE Data PID above
-                  </p>
-                </div>
-
-                <div className="flex space-x-2">
-                  <Button onClick={handleGenerateConfig} className="flex-1">
+                <div className="flex justify-center">
+                  <button onClick={handleGenerateConfig} className="medialive-button medialive-button-primary">
                     Generate Configuration
-                  </Button>
+                  </button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="generated" className="space-y-6">
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* FFmpeg Command */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>FFmpeg Command</span>
-                    <Button variant="outline" size="sm" onClick={() => copyToClipboard(generatedConfig.ffmpegCommand)}>
-                      Copy
-                    </Button>
-                  </CardTitle>
-                  <CardDescription>Generated FFmpeg command for stream processing</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Zap className="w-5 h-5 text-[#ff9900]" />
+                      <h2 className="medialive-panel-title">FFmpeg Command</h2>
+                    </div>
+                    <Badge className="medialive-badge">Generated</Badge>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    FFmpeg command for stream processing
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <textarea
                     value={generatedConfig.ffmpegCommand}
                     readOnly
                     rows={12}
-                    className="font-mono text-sm"
+                    className="medialive-textarea medialive-scrollbar font-mono text-sm"
                     placeholder="Generate configuration to see FFmpeg command..."
                   />
-                </CardContent>
-              </Card>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => copyToClipboard(generatedConfig.ffmpegCommand)}
+                      disabled={!generatedConfig.ffmpegCommand}
+                      className={`medialive-button medialive-button-secondary flex-1 ${!generatedConfig.ffmpegCommand ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy
+                    </button>
+                    <button
+                      onClick={() => downloadConfig(generatedConfig.ffmpegCommand, "ffmpeg-command.sh")}
+                      disabled={!generatedConfig.ffmpegCommand}
+                      className={`medialive-button medialive-button-secondary flex-1 ${!generatedConfig.ffmpegCommand ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download
+                    </button>
+                  </div>
+                </div>
+              </div>
 
               {/* SRT Configuration */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>SRT Configuration</span>
-                    <Button variant="outline" size="sm" onClick={() => copyToClipboard(generatedConfig.srtConfig)}>
-                      Copy
-                    </Button>
-                  </CardTitle>
-                  <CardDescription>SRT stream configuration file</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Network className="w-5 h-5 text-[#ff9900]" />
+                      <h2 className="medialive-panel-title">SRT Configuration</h2>
+                    </div>
+                    <Badge className="medialive-badge">Generated</Badge>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    SRT protocol configuration file
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <textarea
                     value={generatedConfig.srtConfig}
                     readOnly
                     rows={12}
-                    className="font-mono text-sm"
-                    placeholder="Generate configuration to see SRT configuration..."
+                    className="medialive-textarea medialive-scrollbar font-mono text-sm"
+                    placeholder="Generate configuration to see SRT config..."
                   />
-                </CardContent>
-              </Card>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => copyToClipboard(generatedConfig.srtConfig)}
+                      disabled={!generatedConfig.srtConfig}
+                      className={`medialive-button medialive-button-secondary flex-1 ${!generatedConfig.srtConfig ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy
+                    </button>
+                    <button
+                      onClick={() => downloadConfig(generatedConfig.srtConfig, "srt-config.srt")}
+                      disabled={!generatedConfig.srtConfig}
+                      className={`medialive-button medialive-button-secondary flex-1 ${!generatedConfig.srtConfig ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download
+                    </button>
+                  </div>
+                </div>
+              </div>
 
               {/* SCTE-35 Configuration */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>SCTE-35 Configuration</span>
-                    <Button variant="outline" size="sm" onClick={() => copyToClipboard(generatedConfig.scte35Config)}>
-                      Copy
-                    </Button>
-                  </CardTitle>
-                  <CardDescription>SCTE-35 event and transport stream configuration</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <AlertTriangle className="w-5 h-5 text-[#ff9900]" />
+                      <h2 className="medialive-panel-title">SCTE-35 Configuration</h2>
+                    </div>
+                    <Badge className="medialive-badge">Generated</Badge>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    SCTE-35 configuration file
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <textarea
                     value={generatedConfig.scte35Config}
                     readOnly
                     rows={12}
-                    className="font-mono text-sm"
-                    placeholder="Generate configuration to see SCTE-35 configuration..."
+                    className="medialive-textarea medialive-scrollbar font-mono text-sm"
+                    placeholder="Generate configuration to see SCTE-35 config..."
                   />
-                </CardContent>
-              </Card>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => copyToClipboard(generatedConfig.scte35Config)}
+                      disabled={!generatedConfig.scte35Config}
+                      className={`medialive-button medialive-button-secondary flex-1 ${!generatedConfig.scte35Config ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy
+                    </button>
+                    <button
+                      onClick={() => downloadConfig(generatedConfig.scte35Config, "scte35-config.conf")}
+                      disabled={!generatedConfig.scte35Config}
+                      className={`medialive-button medialive-button-secondary flex-1 ${!generatedConfig.scte35Config ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </TabsContent>
         </Tabs>

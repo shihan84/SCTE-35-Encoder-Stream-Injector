@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Play, Square, Settings, Activity, AlertTriangle } from "lucide-react";
+import { Play, Square, Settings, Activity, AlertTriangle, Zap, Shield, Database, Network } from "lucide-react";
 
 interface DistributorStreamConfig {
   // Basic Stream Info
@@ -282,62 +282,77 @@ export default function DistributorStreamConfig() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Distributor SRT Stream Configuration</h1>
-            <p className="text-muted-foreground">
-              Configure SRT streams with distributor-specific specifications
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className={`w-3 h-3 rounded-full ${isStreamRunning ? 'bg-green-500' : 'bg-red-500'}`} />
-            <span className="text-sm">{isStreamRunning ? 'Stream Active' : 'Stream Inactive'}</span>
+    <div className="medialive-container">
+      {/* AWS MediaLive-style Header */}
+      <div className="bg-gradient-to-r from-[#16191f] to-[#0f1419] border-b border-[#232f3e] px-6 py-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#ff9900] to-[#ff8800] rounded-lg flex items-center justify-center">
+                <Network className="w-5 h-5 text-[#0f1419]" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Distributor SRT Stream Configuration</h1>
+                <p className="text-sm text-[#a0aec0]">AWS Elemental MediaLive Compatible</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className={`medialive-status-indicator ${isStreamRunning ? 'medialive-status-running' : 'medialive-status-stopped'}`}></div>
+                <span className="text-sm text-[#a0aec0]">{isStreamRunning ? 'Stream Active' : 'Stream Inactive'}</span>
+              </div>
+              <Badge className="medialive-badge medialive-badge-success">PRODUCTION READY</Badge>
+            </div>
           </div>
         </div>
+      </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="medialive-tabs">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="config">Stream Config</TabsTrigger>
-            <TabsTrigger value="video">Video Specs</TabsTrigger>
-            <TabsTrigger value="audio">Audio Specs</TabsTrigger>
-            <TabsTrigger value="scte">SCTE Control</TabsTrigger>
+            <TabsTrigger value="config" className="medialive-tab">Stream Config</TabsTrigger>
+            <TabsTrigger value="video" className="medialive-tab">Video Specs</TabsTrigger>
+            <TabsTrigger value="audio" className="medialive-tab">Audio Specs</TabsTrigger>
+            <TabsTrigger value="scte" className="medialive-tab">SCTE Control</TabsTrigger>
           </TabsList>
 
           <TabsContent value="config" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Stream Configuration</CardTitle>
-                <CardDescription>
+            <div className="medialive-panel rounded-lg">
+              <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                <div className="flex items-center space-x-2">
+                  <Settings className="w-5 h-5 text-[#ff9900]" />
+                  <h2 className="medialive-panel-title">Basic Stream Configuration</h2>
+                </div>
+                <p className="medialive-panel-subtitle mt-1">
                   Configure basic SRT stream parameters
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="streamName">Stream Name *</Label>
-                  <Input
-                    id="streamName"
+                </p>
+              </div>
+              <div className="medialive-panel-content space-y-4">
+                <div className="medialive-form-group">
+                  <label className="medialive-form-label">Stream Name *</label>
+                  <input
+                    className="medialive-input"
                     placeholder="Service Name"
                     value={streamConfig.streamName}
                     onChange={(e) => setStreamConfig(prev => ({ ...prev, streamName: e.target.value }))}
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="inputUrl">Input URL *</Label>
-                    <Input
-                      id="inputUrl"
+                <div className="medialive-form-row">
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Input URL *</label>
+                    <input
+                      className="medialive-input"
                       placeholder="srt://localhost:9000?streamid=live/stream"
                       value={streamConfig.inputUrl}
                       onChange={(e) => setStreamConfig(prev => ({ ...prev, inputUrl: e.target.value }))}
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="outputUrl">Output URL *</Label>
-                    <Input
-                      id="outputUrl"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Output URL *</label>
+                    <input
+                      className="medialive-input"
                       placeholder="srt://localhost:9001?streamid=live/output"
                       value={streamConfig.outputUrl}
                       onChange={(e) => setStreamConfig(prev => ({ ...prev, outputUrl: e.target.value }))}
@@ -345,374 +360,397 @@ export default function DistributorStreamConfig() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="scteDataPID">SCTE Data PID *</Label>
-                    <Input
-                      id="scteDataPID"
+                <div className="medialive-form-row">
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">SCTE Data PID *</label>
+                    <input
+                      className="medialive-input"
                       type="number"
                       value={streamConfig.scteDataPID}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="nullPID">Null PID *</Label>
-                    <Input
-                      id="nullPID"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Null PID *</label>
+                    <input
+                      className="medialive-input"
                       type="number"
                       value={streamConfig.nullPID}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="latency">Latency (ms) *</Label>
-                  <Input
-                    id="latency"
+                <div className="medialive-form-group">
+                  <label className="medialive-form-label">Latency (ms) *</label>
+                  <input
+                    className="medialive-input"
                     type="number"
                     value={streamConfig.latency}
                     readOnly
-                    className="bg-muted"
                   />
                 </div>
 
                 <div className="flex space-x-2">
-                  <Button 
+                  <button 
                     onClick={handleStartStream} 
                     disabled={isStreamRunning}
-                    className="flex-1"
+                    className={`medialive-button medialive-button-primary flex-1 ${isStreamRunning ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <Play className="w-4 h-4 mr-2" />
                     Start Stream
-                  </Button>
-                  <Button 
+                  </button>
+                  <button 
                     onClick={handleStopStream} 
                     disabled={!isStreamRunning}
-                    variant="outline"
-                    className="flex-1"
+                    className={`medialive-button medialive-button-secondary flex-1 ${!isStreamRunning ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <Square className="w-4 h-4 mr-2" />
                     Stop Stream
-                  </Button>
+                  </button>
                 </div>
-              </CardContent>
-            </Card>
+                
+                {/* Stream Status */}
+                <div className="flex items-center justify-between pt-4 border-t border-[#232f3e]">
+                  <div className="flex items-center space-x-2">
+                    <div className={`medialive-status-indicator ${isStreamRunning ? 'medialive-status-running' : 'medialive-status-stopped'}`}></div>
+                    <span className="text-sm text-[#a0aec0]">Stream Status</span>
+                  </div>
+                  <Badge className={`medialive-badge ${isStreamRunning ? 'medialive-badge-success' : 'medialive-badge-warning'}`}>
+                    {isStreamRunning ? 'ACTIVE' : 'INACTIVE'}
+                  </Badge>
+                </div>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="video" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Video Specifications</CardTitle>
-                <CardDescription>
+            <div className="medialive-panel rounded-lg">
+              <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                <div className="flex items-center space-x-2">
+                  <Database className="w-5 h-5 text-[#ff9900]" />
+                  <h2 className="medialive-panel-title">Video Specifications</h2>
+                </div>
+                <p className="medialive-panel-subtitle mt-1">
                   Distributor-required video encoding parameters
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="videoResolution">Video Resolution *</Label>
-                    <Input
-                      id="videoResolution"
+                </p>
+              </div>
+              <div className="medialive-panel-content space-y-4">
+                <div className="medialive-form-row">
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Video Resolution *</label>
+                    <input
+                      className="medialive-input"
                       value={streamConfig.videoResolution}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="videoCodec">Video Codec *</Label>
-                    <Input
-                      id="videoCodec"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Video Codec *</label>
+                    <input
+                      className="medialive-input"
                       value={streamConfig.videoCodec}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="profileLevel">Profile@Level *</Label>
-                    <Input
-                      id="profileLevel"
+                <div className="medialive-form-row">
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Profile@Level *</label>
+                    <input
+                      className="medialive-input"
                       value={streamConfig.profileLevel}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="gop">GOP *</Label>
-                    <Input
-                      id="gop"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">GOP *</label>
+                    <input
+                      className="medialive-input"
                       type="number"
                       value={streamConfig.gop}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="bFrames">B Frames *</Label>
-                    <Input
-                      id="bFrames"
+                <div className="medialive-form-row">
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">B Frames *</label>
+                    <input
+                      className="medialive-input"
                       type="number"
                       value={streamConfig.bFrames}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="videoBitrate">Video Bitrate (kbps) *</Label>
-                    <Input
-                      id="videoBitrate"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Video Bitrate (kbps) *</label>
+                    <input
+                      className="medialive-input"
                       type="number"
                       value={streamConfig.videoBitrate}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="chroma">Chroma *</Label>
-                    <Input
-                      id="chroma"
+                <div className="medialive-form-row-3">
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Chroma *</label>
+                    <input
+                      className="medialive-input"
                       value={streamConfig.chroma}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="aspectRatio">Aspect Ratio *</Label>
-                    <Input
-                      id="aspectRatio"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Aspect Ratio *</label>
+                    <input
+                      className="medialive-input"
                       value={streamConfig.aspectRatio}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="pcr">PCR *</Label>
-                    <Input
-                      id="pcr"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">PCR *</label>
+                    <input
+                      className="medialive-input"
                       value={streamConfig.pcr}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-center space-x-2">
-                    <Settings className="w-5 h-5 text-blue-600" />
-                    <span className="font-medium text-blue-800">Video Specifications Locked</span>
+                <div className="bg-gradient-to-r from-[#232f3e] to-[#1a252f] border border-[#3b454f] rounded-lg p-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <AlertTriangle className="w-4 h-4 text-[#ff9900]" />
+                    <span className="text-sm font-medium text-white">Distributor Requirements</span>
                   </div>
-                  <p className="text-sm text-blue-700 mt-2">
-                    Video specifications are locked to distributor requirements. All parameters must match exactly.
+                  <p className="text-sm text-[#a0aec0]">
+                    All video parameters are locked to distributor specifications. Any changes must be approved by the distributor.
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="audio" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Audio Specifications</CardTitle>
-                <CardDescription>
+            <div className="medialive-panel rounded-lg">
+              <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                <div className="flex items-center space-x-2">
+                  <Activity className="w-5 h-5 text-[#ff9900]" />
+                  <h2 className="medialive-panel-title">Audio Specifications</h2>
+                </div>
+                <p className="medialive-panel-subtitle mt-1">
                   Distributor-required audio encoding parameters
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="audioCodec">Audio Codec *</Label>
-                    <Input
-                      id="audioCodec"
+                </p>
+              </div>
+              <div className="medialive-panel-content space-y-4">
+                <div className="medialive-form-row">
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Audio Codec *</label>
+                    <input
+                      className="medialive-input"
                       value={streamConfig.audioCodec}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="audioBitrate">Audio Bitrate (kbps) *</Label>
-                    <Input
-                      id="audioBitrate"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Audio Bitrate (kbps) *</label>
+                    <input
+                      className="medialive-input"
                       type="number"
                       value={streamConfig.audioBitrate}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="audioLKFS">Audio LKFS (dB) *</Label>
-                    <Input
-                      id="audioLKFS"
+                <div className="medialive-form-row">
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Audio LKFS *</label>
+                    <input
+                      className="medialive-input"
                       type="number"
                       value={streamConfig.audioLKFS}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="audioSamplingRate">Audio Sampling Rate (kHz) *</Label>
-                    <Input
-                      id="audioSamplingRate"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Sampling Rate (kHz) *</label>
+                    <input
+                      className="medialive-input"
                       type="number"
                       value={streamConfig.audioSamplingRate}
                       readOnly
-                      className="bg-muted"
                     />
                   </div>
                 </div>
 
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex items-center space-x-2">
-                    <Activity className="w-5 h-5 text-green-600" />
-                    <span className="font-medium text-green-800">Audio Specifications Locked</span>
+                <div className="bg-gradient-to-r from-[#232f3e] to-[#1a252f] border border-[#3b454f] rounded-lg p-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Shield className="w-4 h-4 text-[#ff9900]" />
+                    <span className="text-sm font-medium text-white">Audio Compliance</span>
                   </div>
-                  <p className="text-sm text-green-700 mt-2">
-                    Audio specifications are locked to distributor requirements. All parameters must match exactly.
+                  <p className="text-sm text-[#a0aec0]">
+                    Audio parameters are locked to ensure compliance with distributor loudness standards and broadcast requirements.
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="scte" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>SCTE-35 Control</CardTitle>
-                  <CardDescription>
-                    Manage SCTE-35 events for ad insertion
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="adDuration">Ad Duration (seconds) *</Label>
-                      <Input
-                        id="adDuration"
+              {/* SCTE Configuration */}
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Zap className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">SCTE-35 Configuration</h2>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    Configure SCTE-35 injection parameters
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Ad Duration (seconds)</label>
+                      <input
+                        className="medialive-input"
                         type="number"
                         value={streamConfig.adDuration}
                         onChange={(e) => setStreamConfig(prev => ({ ...prev, adDuration: parseInt(e.target.value) }))}
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="scteEventID">Next SCTE Event ID *</Label>
-                      <Input
-                        id="scteEventID"
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Pre-roll Duration (seconds)</label>
+                      <input
+                        className="medialive-input"
                         type="number"
-                        value={streamConfig.scteEventID}
-                        readOnly
-                        className="bg-muted"
+                        value={streamConfig.preRollDuration}
+                        onChange={(e) => setStreamConfig(prev => ({ ...prev, preRollDuration: parseInt(e.target.value) }))}
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="preRollDuration">Pre-roll Duration (seconds) *</Label>
-                    <Input
-                      id="preRollDuration"
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Next Event ID</label>
+                    <input
+                      className="medialive-input"
                       type="number"
-                      min="0"
-                      max="10"
-                      value={streamConfig.preRollDuration}
-                      onChange={(e) => setStreamConfig(prev => ({ ...prev, preRollDuration: parseInt(e.target.value) }))}
+                      value={streamConfig.scteEventID}
+                      readOnly
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="flex space-x-2">
-                      <Button 
-                        onClick={handleSendCueOut}
-                        disabled={!isStreamRunning}
-                        className="flex-1 bg-red-600 hover:bg-red-700"
-                      >
-                        Send CUE-OUT
-                      </Button>
-                      <Button 
-                        onClick={handleSendCueIn}
-                        disabled={!isStreamRunning}
-                        className="flex-1 bg-green-600 hover:bg-green-700"
-                      >
-                        Send CUE-IN
-                      </Button>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-[#a0aec0]">Injection Status</span>
+                      <div className="flex items-center space-x-2">
+                        <div className={`medialive-status-indicator ${isStreamRunning ? 'medialive-status-running' : 'medialive-status-stopped'}`}></div>
+                        <Badge className={`medialive-badge ${isStreamRunning ? 'medialive-badge-success' : 'medialive-badge-warning'}`}>
+                          {isStreamRunning ? 'READY' : 'STOPPED'}
+                        </Badge>
+                      </div>
                     </div>
                     
-                    <Button 
+                    <button 
+                      onClick={handleSendCueOut}
+                      disabled={!isStreamRunning}
+                      className={`medialive-button medialive-button-primary w-full ${!isStreamRunning ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <Zap className="w-4 h-4 mr-2" />
+                      Send CUE-OUT
+                    </button>
+                    <button 
+                      onClick={handleSendCueIn}
+                      disabled={!isStreamRunning}
+                      className={`medialive-button medialive-button-secondary w-full ${!isStreamRunning ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <Zap className="w-4 h-4 mr-2" />
+                      Send CUE-IN
+                    </button>
+                    <button 
                       onClick={handleCrashRecovery}
                       disabled={!isStreamRunning}
-                      variant="outline"
-                      className="w-full"
+                      className={`medialive-button medialive-button-secondary w-full ${!isStreamRunning ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                      <AlertTriangle className="w-4 h-4 mr-2" />
-                      Emergency CUE-IN (Crash Recovery)
-                    </Button>
+                      <Shield className="w-4 h-4 mr-2" />
+                      Crash Recovery
+                    </button>
                   </div>
+                </div>
+              </div>
 
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <div className="flex items-center space-x-2">
-                      <AlertTriangle className="w-5 h-5 text-yellow-600" />
-                      <span className="font-medium text-yellow-800">Important Notes</span>
-                    </div>
-                    <ul className="text-sm text-yellow-700 mt-2 space-y-1">
-                      <li>• Event IDs increment sequentially automatically</li>
-                      <li>• CUE-OUT starts ad break with specified duration</li>
-                      <li>• CUE-IN returns to regular programming</li>
-                      <li>• Use Emergency CUE-IN for crash recovery</li>
-                    </ul>
+              {/* Event Log */}
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Activity className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">Event Log</h2>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>SCTE Event Log</CardTitle>
-                  <CardDescription>
+                  <p className="medialive-panel-subtitle mt-1">
                     Recent SCTE-35 events and status
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                  </p>
+                </div>
+                <div className="medialive-panel-content">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-2">
+                      <div className={`medialive-status-indicator ${scteEvents.length > 0 ? 'medialive-status-running' : 'medialive-status-stopped'}`}></div>
+                      <span className="text-sm text-[#a0aec0]">Event Activity</span>
+                    </div>
+                    <Badge className={`medialive-badge ${scteEvents.length > 0 ? 'medialive-badge-success' : 'medialive-badge-warning'}`}>
+                      {scteEvents.length} EVENTS
+                    </Badge>
+                  </div>
+                  
+                  <div className="space-y-3 max-h-96 overflow-y-auto medialive-scrollbar">
                     {scteEvents.length === 0 ? (
-                      <div className="text-center text-muted-foreground py-8">
-                        No SCTE events sent yet
+                      <div className="text-center py-8">
+                        <Activity className="w-8 h-8 mx-auto text-[#3b454f] mb-2" />
+                        <p className="text-[#a0aec0]">No SCTE-35 events yet</p>
+                        <p className="text-sm text-[#a0aec0] mt-1">Send CUE-OUT/CUE-IN to see events here</p>
                       </div>
                     ) : (
                       scteEvents.map((event) => (
-                        <div key={event.id} className="flex items-center justify-between p-3 border rounded">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2">
-                              <Badge variant={event.type === 'CUE-OUT' ? 'destructive' : 'default'}>
-                                {event.type}
-                              </Badge>
-                              <span className="font-medium">Event ID: {event.id}</span>
+                        <div key={event.id} className="bg-gradient-to-r from-[#232f3e] to-[#1a252f] border border-[#3b454f] rounded-lg p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div className={`medialive-status-indicator ${
+                                event.status === 'sent' ? 'medialive-status-running' : 
+                                event.status === 'acknowledged' ? 'medialive-status-running' : 'medialive-status-warning'
+                              }`} />
+                              <div>
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-white font-medium">{event.type}</span>
+                                  <Badge className={`medialive-badge ${
+                                    event.type === 'CUE-OUT' ? 'medialive-badge-warning' : 'medialive-badge-success'
+                                  }`}>
+                                    {event.type}
+                                  </Badge>
+                                </div>
+                                <div className="text-sm text-[#a0aec0]">Event ID: {event.id}</div>
+                              </div>
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                              {new Date(event.timestamp).toLocaleString()}
-                              {event.adDuration > 0 && ` • Duration: ${event.adDuration}s`}
-                              {event.preRollDuration > 0 && ` • Pre-roll: ${event.preRollDuration}s`}
+                            <div className="text-right">
+                              <div className="text-sm text-white">
+                                {event.adDuration > 0 ? `${event.adDuration}s` : ''}
+                              </div>
+                              <div className="text-xs text-[#a0aec0]">
+                                {new Date(event.timestamp).toLocaleTimeString()}
+                              </div>
                             </div>
                           </div>
-                          <Badge variant="outline">
-                            {event.status}
-                          </Badge>
                         </div>
                       ))
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </TabsContent>
         </Tabs>

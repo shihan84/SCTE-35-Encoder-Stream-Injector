@@ -1,0 +1,74 @@
+{
+  "inputUrl": "srt://source-server:9000?streamid=live/stream",
+  "outputUrl": "srt://output-server:9001?streamid=live/output",
+  "streamType": "srt",
+  "bitrate": 5000,
+  "resolution": "1920x1080",
+  "codec": "h264",
+  "srtOptions": {
+    "latency": 2000,
+    "maxbw": 10000000,
+    "packetfilter": "",
+    "messageapi": true,
+    "streamid": "live/stream",
+    "pbkeylen": 0,
+    "passphrase": "",
+    "rcvbuf": 8192000,
+    "sndbuf": 8192000,
+    "mss": 1456,
+    "dropdelay": 100,
+    "nakreport": true,
+    "connect_timeout": 5000,
+    "payload_size": 1316,
+    "linger": 0,
+    "tlpktdrop": true,
+    "snddropdelay": 10,
+    "minversion": 0x010000,
+    "streamer": true,
+    "congestion_controller": "live"
+  },
+  "videoOptions": {
+    "profile": "high",
+    "level": "4.1",
+    "pixelFormat": "yuv420p",
+    "frameRate": 30,
+    "gopSize": 60,
+    "bFrames": 3,
+    "crf": 23,
+    "preset": "medium",
+    "tune": "none"
+  },
+  "audioOptions": {
+    "codec": "aac",
+    "profile": "aac_low",
+    "sampleRate": 48000,
+    "channels": 2,
+    "bitrate": 128,
+    "maxBitrate": 192,
+    "normalize": true,
+    "compression": true
+  },
+  "metadata": {
+    "title": "Live Stream",
+    "description": "SCTE-35 enabled live stream",
+    "genre": "Live",
+    "artist": "SCTE-35 Encoder",
+    "album": "Live Broadcast"
+  },
+  "injectionSettings": {
+    "autoInject": true,
+    "injectionDelay": 1000,
+    "retryAttempts": 3,
+    "retryDelay": 5000,
+    "validateData": true,
+    "logInjections": true
+  },
+  "monitoring": {
+    "enableMetrics": true,
+    "metricsInterval": 1000,
+    "enableHealth": true,
+    "healthInterval": 5000,
+    "enableActivity": true,
+    "logLevel": "info"
+  }
+}

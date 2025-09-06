@@ -120,3 +120,315 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* AWS MediaLive Professional Theme */
+.medialive-container {
+  background: linear-gradient(135deg, #16191f 0%, #0f1419 100%);
+  min-height: 100vh;
+}
+
+.medialive-panel {
+  background: linear-gradient(145deg, #16191f 0%, #0f1419 100%);
+  border: 1px solid #232f3e;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+.medialive-panel-header {
+  background: linear-gradient(145deg, #1a252f 0%, #16191f 100%);
+  border-bottom: 1px solid #232f3e;
+}
+
+.medialive-panel-title {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.medialive-panel-subtitle {
+  color: #a0aec0;
+}
+
+.medialive-panel-content {
+  padding: 1.5rem;
+}
+
+.medialive-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.medialive-form-row-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.medialive-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.medialive-form-label {
+  color: #e2e8f0;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.medialive-input {
+  background: #1a252f;
+  border: 1px solid #3b454f;
+  color: #f2f3f3;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.medialive-input:focus {
+  border-color: #ff9900;
+  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1);
+  background: #232f3e;
+  outline: none;
+}
+
+.medialive-textarea {
+  background: #1a252f;
+  border: 1px solid #3b454f;
+  color: #f2f3f3;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  resize: vertical;
+}
+
+.medialive-textarea:focus {
+  border-color: #ff9900;
+  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1);
+  background: #232f3e;
+  outline: none;
+}
+
+.medialive-select {
+  background: #1a252f;
+  border: 1px solid #3b454f;
+  color: #f2f3f3;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.medialive-select:focus {
+  border-color: #ff9900;
+  box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.1);
+  outline: none;
+}
+
+.medialive-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.medialive-button-primary {
+  background: linear-gradient(135deg, #ff9900 0%, #ff8800 100%);
+  color: #0f1419;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(255, 153, 0, 0.3);
+}
+
+.medialive-button-primary:hover {
+  background: linear-gradient(135deg, #ff8800 0%, #ff7700 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 153, 0, 0.4);
+}
+
+.medialive-button-secondary {
+  background: linear-gradient(135deg, #232f3e 0%, #1a252f 100%);
+  color: #f2f3f3;
+  border: 1px solid #3b454f;
+  font-weight: 500;
+}
+
+.medialive-button-secondary:hover {
+  background: linear-gradient(135deg, #2a3441 0%, #232f3e 100%);
+  border-color: #4a5568;
+  transform: translateY(-1px);
+}
+
+.medialive-checkbox {
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid #3b454f;
+  background: #1a252f;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.medialive-checkbox:checked {
+  background: #ff9900;
+  border-color: #ff9900;
+}
+
+.medialive-switch {
+  background: #1a252f;
+  border: 1px solid #3b454f;
+}
+
+.medialive-switch:checked {
+  background: #ff9900;
+}
+
+.medialive-tabs {
+  background: #16191f;
+  border: 1px solid #232f3e;
+  border-radius: 0.375rem;
+}
+
+.medialive-tab {
+  background: transparent;
+  color: #a0aec0;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.75rem 1rem;
+  border-radius: 0;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.medialive-tab:hover {
+  color: #f2f3f3;
+  background: rgba(255, 153, 0, 0.1);
+}
+
+.medialive-tab[data-state="active"] {
+  color: #ff9900;
+  border-bottom-color: #ff9900;
+  background: rgba(255, 153, 0, 0.05);
+}
+
+.medialive-badge {
+  background: #232f3e;
+  color: #a0aec0;
+  border: 1px solid #3b454f;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.medialive-badge-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border-color: #10b981;
+}
+
+.medialive-badge-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.medialive-badge-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.medialive-text-secondary {
+  color: #a0aec0;
+}
+
+.medialive-border {
+  border-color: #232f3e;
+}
+
+/* MediaLive status indicators and animations */
+.medialive-status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.medialive-status-running {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.medialive-status-warning {
+  background: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+}
+
+.medialive-status-error {
+  background: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+}
+
+.medialive-status-stopped {
+  background: #6b7280;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* MediaLive-style loading animation */
+.medialive-loading {
+  background: linear-gradient(90deg, #16191f 25%, #1a252f 50%, #16191f 75%);
+  background-size: 200% 100%;
+  animation: medialive-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes medialive-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Custom scrollbar for MediaLive theme */
+.medialive-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.medialive-scrollbar::-webkit-scrollbar-track {
+  background: #0f1419;
+  border-radius: 4px;
+}
+
+.medialive-scrollbar::-webkit-scrollbar-thumb {
+  background: #232f3e;
+  border-radius: 4px;
+}
+
+.medialive-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #3b454f;
+}
+
+/* Force dark theme by default */
+body {
+  background: #0f1419 !important;
+  color: #f2f3f3 !important;
+}

@@ -1,26 +1,95 @@
-# SCTE-35 Encoder & Stream Injector - Deployment Guide
+# 🚀 Production Deployment Guide
 
-## Table of Contents
-- [Overview](#overview)
-- [System Requirements](#system-requirements)
-- [Quick Start](#quick-start)
-- [Detailed Deployment](#detailed-deployment)
-- [Configuration](#configuration)
-- [Monitoring](#monitoring)
-- [Troubleshooting](#troubleshooting)
-- [Security](#security)
-- [Scaling](#scaling)
+## Prerequisites
 
-## Overview
+- **Node.js** 18+ 
+- **FFmpeg** with SCTE-35 support
+- **PostgreSQL** (optional, for advanced features)
+- **Redis** (optional, for caching)
+- **Docker** (optional, for containerized deployment)
 
-The SCTE-35 Encoder & Stream Injector is a comprehensive web-based solution for creating SCTE-35 cues and injecting them into live video streams. This guide covers deployment from development to production environments.
+## Quick Deployment
 
-### Features
-- **SCTE-35 Encoding**: Full support for splice insert and time signal commands
-- **Multi-Protocol Streaming**: SRT, HLS, DASH, and RTMP support
-- **Real-time Injection**: Live SCTE-35 cue insertion into streams
-- **Monitoring Dashboard**: Real-time stream health and performance metrics
-- **Professional UI**: Intuitive web interface for all operations
+### 1. Clone and Install
+
+```bash
+git clone https://github.com/your-username/scte35-stream-injector.git
+cd scte35-stream-injector
+npm install
+```
+
+### 2. Environment Configuration
+
+```bash
+# Copy environment template
+cp config.example.env .env.local
+
+# Edit configuration
+nano .env.local
+```
+
+### 3. Build and Start
+
+```bash
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+## Docker Deployment
+
+### 1. Build Docker Image
+
+```bash
+docker build -t scte35-stream-injector .
+```
+
+### 2. Run Container
+
+```bash
+docker run -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e PORT=3000 \
+  scte35-stream-injector
+```
+
+### 3. Docker Compose
+
+```yaml
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=scte35_injector
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+```
 
 ## System Requirements
 
@@ -28,245 +97,159 @@ The SCTE-35 Encoder & Stream Injector is a comprehensive web-based solution for 
 - **CPU**: 2 cores
 - **RAM**: 4GB
 - **Storage**: 20GB SSD
-- **OS**: Ubuntu 20.04+, CentOS 8+, or equivalent
-- **Node.js**: 18.x or higher
-- **Network**: Stable internet connection
+- **Network**: 100 Mbps
 
-### Recommended Requirements (Production)
+### Recommended Requirements
 - **CPU**: 4+ cores
-- **RAM**: 8GB+ 
+- **RAM**: 8GB+
 - **Storage**: 50GB+ SSD
-- **OS**: Ubuntu 22.04 LTS (recommended)
-- **Node.js**: 18.x or higher
-- **Database**: PostgreSQL 14+
-- **Load Balancer**: For high availability
-- **SSL Certificate**: For secure connections
+- **Network**: 1 Gbps
 
-## Quick Start
+### Hardware Acceleration
+- **NVIDIA GPU**: For CUDA acceleration
+- **Intel GPU**: For Quick Sync Video
+- **AMD GPU**: For VAAPI acceleration
 
-### Development Deployment
+## Security Configuration
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/shihan84/SCTE-35-Encoder-Stream-Injector.git
-   cd SCTE-35-Encoder-Stream-Injector
-   ```
+### 1. Firewall Setup
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Access the application**
-   Open your browser and navigate to `http://localhost:3000`
-
-### Production Deployment (Single Server)
-
-1. **Server Preparation**
-   ```bash
-   # Update system
-   sudo apt-get update && sudo apt-get upgrade -y
-   
-   # Install Node.js 18
-   curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-   sudo apt-get install -y nodejs
-   
-   # Install PM2
-   npm install -g pm2
-   ```
-
-2. **Application Setup**
-   ```bash
-   # Clone repository
-   git clone https://github.com/shihan84/SCTE-35-Encoder-Stream-Injector.git
-   cd SCTE-35-Encoder-Stream-Injector
-   
-   # Install dependencies
-   npm install
-   
-   # Build application
-   npm run build
-   ```
-
-3. **Environment Configuration**
-   ```bash
-   # Create environment file
-   cp .env.example .env
-   
-   # Edit .env with your configuration
-   nano .env
-   ```
-
-4. **Start Application**
-   ```bash
-   # Start with PM2
-   pm2 start server.ts --name "scte35-encoder"
-   
-   # Save PM2 configuration
-   pm2 save
-   pm2 startup
-   ```
-
-## Detailed Deployment
-
-### 1. Server Preparation
-
-#### System Update
 ```bash
-sudo apt-get update && sudo apt-get upgrade -y
-sudo apt-get install -y curl git build-essential
+# Allow HTTP/HTTPS
+ufw allow 80
+ufw allow 443
+
+# Allow SRT ports
+ufw allow 8888
+
+# Allow SSH
+ufw allow 22
 ```
 
-#### Install Node.js
-```bash
-# Using NodeSource repository
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+### 2. SSL/TLS Configuration
 
-# Verify installation
-node --version
-npm --version
+```bash
+# Using Let's Encrypt
+certbot --nginx -d yourdomain.com
+
+# Or using Cloudflare
+# Configure SSL in Cloudflare dashboard
 ```
 
-#### Install PM2 (Process Manager)
+### 3. Environment Security
+
 ```bash
+# Generate secure secrets
+openssl rand -base64 32  # For NEXTAUTH_SECRET
+openssl rand -base64 32  # For JWT_SECRET
+
+# Set secure file permissions
+chmod 600 .env.local
+chown app:app .env.local
+```
+
+## Performance Optimization
+
+### 1. Node.js Optimization
+
+```bash
+# Set production environment
+export NODE_ENV=production
+
+# Increase memory limit
+export NODE_OPTIONS="--max-old-space-size=4096"
+
+# Enable clustering
 npm install -g pm2
-pm2 --version
+pm2 start ecosystem.config.js
 ```
 
-#### Create Application User
+### 2. FFmpeg Optimization
+
 ```bash
-sudo useradd -m -s /bin/bash scte35
-sudo usermod -aG sudo scte35
+# Install hardware acceleration
+# NVIDIA
+sudo apt install nvidia-cuda-toolkit
+
+# Intel
+sudo apt install intel-media-va-driver-non-free
+
+# AMD
+sudo apt install mesa-va-drivers
 ```
 
-### 2. Database Setup
+### 3. Database Optimization
 
-#### Option 1: SQLite (Development/Small Production)
+```sql
+-- PostgreSQL optimization
+ALTER SYSTEM SET shared_buffers = '256MB';
+ALTER SYSTEM SET effective_cache_size = '1GB';
+ALTER SYSTEM SET maintenance_work_mem = '64MB';
+ALTER SYSTEM SET checkpoint_completion_target = 0.9;
+ALTER SYSTEM SET wal_buffers = '16MB';
+ALTER SYSTEM SET default_statistics_target = 100;
+```
+
+## Monitoring Setup
+
+### 1. Application Monitoring
+
 ```bash
-# SQLite is included by default
-# No additional setup required
+# Install PM2 for process management
+npm install -g pm2
+
+# Start with monitoring
+pm2 start ecosystem.config.js
+pm2 monit
 ```
 
-#### Option 2: PostgreSQL (Production Recommended)
+### 2. System Monitoring
+
 ```bash
-# Install PostgreSQL
-sudo apt-get install -y postgresql postgresql-contrib
+# Install monitoring tools
+sudo apt install htop iotop nethogs
 
-# Start and enable PostgreSQL
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-
-# Create database and user
-sudo -u postgres createdb scte35_encoder
-sudo -u postgres createuser scte35_user
-sudo -u postgres psql -c "ALTER USER scte35_user PASSWORD 'your_secure_password';"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE scte35_encoder TO scte35_user;"
+# Monitor resources
+htop
+iotop
+nethogs
 ```
 
-### 3. Application Deployment
+### 3. Log Management
 
-#### Clone and Setup Application
 ```bash
-# Switch to application user
-sudo -u scte35 -i
+# Configure log rotation
+sudo nano /etc/logrotate.d/scte35-injector
 
-# Clone repository
-git clone https://github.com/shihan84/SCTE-35-Encoder-Stream-Injector.git
-cd SCTE-35-Encoder-Stream-Injector
-
-# Install dependencies
-npm install
-
-# Build application
-npm run build
-
-# Create necessary directories
-sudo mkdir -p /var/log/scte35
-sudo mkdir -p /var/www/hls
-sudo mkdir -p /var/www/dash
-sudo chown -R scte35:scte35 /var/log/scte35
-sudo chown -R scte35:scte35 /var/www/hls
-sudo chown -R scte35:scte35 /var/www/dash
+# Log rotation config
+/var/log/scte35-injector.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    create 644 app app
+}
 ```
 
-#### Environment Configuration
-Create `.env` file:
-```bash
-# Application
-NODE_ENV=production
-PORT=3000
-NEXT_PUBLIC_BASE_URL=https://your-domain.com
+## Load Balancing
 
-# Database (PostgreSQL example)
-DATABASE_URL="postgresql://scte35_user:your_secure_password@localhost:5432/scte35_encoder"
+### 1. Nginx Configuration
 
-# Stream Configuration
-SRT_INPUT_PORT=9000
-SRT_OUTPUT_PORT=9001
-RTMP_PORT=1935
-HLS_OUTPUT_DIR=/var/www/hls
-DASH_OUTPUT_DIR=/var/www/dash
-
-# Security
-JWT_SECRET=your-jwt-secret-key-here
-ENCRYPTION_KEY=your-encryption-key-here
-
-# Logging
-LOG_LEVEL=info
-LOG_FILE=/var/log/scte35/app.log
-```
-
-#### Database Migration
-```bash
-# If using Prisma
-npm run db:push
-npm run db:generate
-```
-
-### 4. Web Server Configuration
-
-#### Install Nginx
-```bash
-sudo apt-get install -y nginx
-```
-
-#### SSL Certificate (Let's Encrypt)
-```bash
-# Install Certbot
-sudo apt-get install -y certbot python3-certbot-nginx
-
-# Get SSL certificate
-sudo certbot --nginx -d your-domain.com -d www.your-domain.com
-```
-
-#### Nginx Configuration
-Create `/etc/nginx/sites-available/scte35`:
 ```nginx
-server {
-    listen 80;
-    server_name your-domain.com www.your-domain.com;
-    return 301 https://$server_name$request_uri;
+upstream scte35_backend {
+    server 127.0.0.1:3000;
+    server 127.0.0.1:3001;
+    server 127.0.0.1:3002;
 }
 
 server {
-    listen 443 ssl http2;
-    server_name your-domain.com www.your-domain.com;
-    
-    # SSL Configuration
-    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-    
-    # Application Proxy
+    listen 80;
+    server_name yourdomain.com;
+
     location / {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://scte35_backend;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -276,424 +259,204 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
     }
-    
-    # WebSocket Support
-    location /api/stream/ws {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-    
-    # Static Files (if needed)
-    location /static/ {
-        alias /var/www/static/;
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
 }
 ```
 
-#### Enable Site
-```bash
-sudo ln -s /etc/nginx/sites-available/scte35 /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl reload nginx
+### 2. HAProxy Configuration
+
+```haproxy
+global
+    daemon
+    maxconn 4096
+
+defaults
+    mode http
+    timeout connect 5000ms
+    timeout client 50000ms
+    timeout server 50000ms
+
+frontend scte35_frontend
+    bind *:80
+    default_backend scte35_backend
+
+backend scte35_backend
+    balance roundrobin
+    server app1 127.0.0.1:3000 check
+    server app2 127.0.0.1:3001 check
+    server app3 127.0.0.1:3002 check
 ```
 
-### 5. Process Management
+## Backup Strategy
 
-#### PM2 Configuration
-Create `ecosystem.config.js`:
-```javascript
-module.exports = {
-  apps: [{
-    name: 'scte35-encoder',
-    script: 'server.ts',
-    instances: 'max',
-    exec_mode: 'cluster',
-    env: {
-      NODE_ENV: 'production',
-      PORT: 3000
-    },
-    error_file: '/var/log/scte35/error.log',
-    out_file: '/var/log/scte35/out.log',
-    log_file: '/var/log/scte35/combined.log',
-    time: true,
-    max_memory_restart: '1G',
-    node_args: '--max-old-space-size=1024'
-  }]
-}
-```
-
-#### Start Application
-```bash
-# Start application
-pm2 start ecosystem.config.js
-
-# Save PM2 configuration
-pm2 save
-
-# Setup PM2 to start on boot
-pm2 startup
-```
-
-### 6. Firewall Configuration
-
-#### UFW Configuration
-```bash
-# Enable UFW
-sudo ufw enable
-
-# Allow essential services
-sudo ufw allow ssh
-sudo ufw allow http
-sudo ufw allow https
-
-# Allow streaming ports
-sudo ufw allow 9000:9005/tcp
-sudo ufw allow 1935/tcp
-
-# Check status
-sudo ufw status
-```
-
-## Configuration
-
-### Environment Variables
-
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `NODE_ENV` | Environment | `development` | Yes |
-| `PORT` | Application port | `3000` | No |
-| `DATABASE_URL` | Database connection string | - | Yes |
-| `SRT_INPUT_PORT` | SRT input port | `9000` | No |
-| `SRT_OUTPUT_PORT` | SRT output port | `9001` | No |
-| `RTMP_PORT` | RTMP port | `1935` | No |
-| `JWT_SECRET` | JWT secret key | - | Yes |
-| `LOG_LEVEL` | Logging level | `info` | No |
-
-### Stream Configuration
-
-#### SRT Configuration
-```bash
-# Input URL format
-srt://localhost:9000?streamid=live/input
-
-# Output URL format
-srt://localhost:9001?streamid=live/output
-```
-
-#### HLS Configuration
-```bash
-# Output directory
-/var/www/hls
-
-# Input URL format
-http://input-server/live/stream.m3u8
-
-# Output URL format
-http://your-domain.com/hls/stream.m3u8
-```
-
-#### DASH Configuration
-```bash
-# Output directory
-/var/www/dash
-
-# Input URL format
-http://input-server/live/stream.mpd
-
-# Output URL format
-http://your-domain.com/dash/stream.mpd
-```
-
-## Monitoring
-
-### Application Health Checks
+### 1. Database Backup
 
 ```bash
-# Overall health
-curl https://your-domain.com/api/health
+# PostgreSQL backup
+pg_dump scte35_injector > backup_$(date +%Y%m%d_%H%M%S).sql
 
-# Stream status
-curl https://your-domain.com/api/stream/status
-
-# Stream metrics
-curl https://your-domain.com/api/stream/metrics
-
-# System health
-curl https://your-domain.com/api/stream/health
+# Automated backup script
+#!/bin/bash
+BACKUP_DIR="/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+pg_dump scte35_injector > $BACKUP_DIR/backup_$DATE.sql
+find $BACKUP_DIR -name "backup_*.sql" -mtime +7 -delete
 ```
 
-### PM2 Monitoring
+### 2. Application Backup
 
 ```bash
-# Monitor all processes
-pm2 monit
-
-# View logs
-pm2 logs scte35-encoder
-
-# Check process status
-pm2 status
-
-# Restart application
-pm2 restart scte35-encoder
-```
-
-### System Monitoring
-
-```bash
-# System resources
-htop
-df -h
-free -h
-
-# Application logs
-tail -f /var/log/scte35/combined.log
-
-# Nginx logs
-tail -f /var/log/nginx/access.log
-tail -f /var/log/nginx/error.log
+# Backup application files
+tar -czf scte35_backup_$(date +%Y%m%d).tar.gz \
+  --exclude=node_modules \
+  --exclude=.next \
+  --exclude=uploads \
+  /path/to/scte35-stream-injector
 ```
 
 ## Troubleshooting
 
 ### Common Issues
 
-#### Application Won't Start
+1. **Port Already in Use**
+   ```bash
+   # Find process using port
+   lsof -i :3000
+   
+   # Kill process
+   kill -9 <PID>
+   ```
+
+2. **FFmpeg Not Found**
+   ```bash
+   # Install FFmpeg
+   sudo apt update
+   sudo apt install ffmpeg
+   
+   # Verify installation
+   ffmpeg -version
+   ```
+
+3. **Permission Denied**
+   ```bash
+   # Fix permissions
+   sudo chown -R app:app /path/to/app
+   chmod +x examples/quick-start.sh
+   ```
+
+4. **Memory Issues**
+   ```bash
+   # Increase swap
+   sudo fallocate -l 2G /swapfile
+   sudo chmod 600 /swapfile
+   sudo mkswap /swapfile
+   sudo swapon /swapfile
+   ```
+
+### Log Analysis
+
 ```bash
-# Check PM2 status
-pm2 status
+# View application logs
+tail -f /var/log/scte35-injector.log
+
+# View system logs
+journalctl -u scte35-injector -f
 
 # View error logs
-pm2 logs scte35-encoder --err
-
-# Check port availability
-sudo netstat -tulpn | grep :3000
-
-# Check Node.js version
-node --version
-npm --version
+grep -i error /var/log/scte35-injector.log
 ```
 
-#### Database Connection Issues
+## Health Checks
+
+### 1. Application Health
+
 ```bash
-# Test database connection
-psql -h localhost -U scte35_user -d scte35_encoder
+# Check if application is running
+curl http://localhost:3000/api/health
 
-# Check PostgreSQL status
-sudo systemctl status postgresql
-
-# Check database logs
-sudo tail -f /var/log/postgresql/postgresql-*.log
-```
-
-#### Stream Issues
-```bash
 # Check stream status
-curl https://your-domain.com/api/stream/status
-
-# Check if ports are open
-sudo netstat -tulpn | grep :9000
-sudo netstat -tulpn | grep :1935
-
-# Test SRT connection
-# Use SRT tools to test connectivity
+curl http://localhost:3000/api/stream/status
 ```
 
-#### Nginx Issues
+### 2. System Health
+
 ```bash
-# Test Nginx configuration
-sudo nginx -t
+# Check disk space
+df -h
 
-# Check Nginx status
-sudo systemctl status nginx
-
-# View Nginx logs
-sudo tail -f /var/log/nginx/error.log
-```
-
-### Performance Issues
-
-#### High Memory Usage
-```bash
 # Check memory usage
-pm2 monit
+free -h
 
-# Restart application
-pm2 restart scte35-encoder
-
-# Increase memory limit
-pm2 reload scte35-encoder --update-env
-```
-
-#### High CPU Usage
-```bash
 # Check CPU usage
 top
-
-# Check number of instances
-pm2 scale scte35-encoder 4
-
-# Monitor performance
-pm2 monit
 ```
-
-## Security
-
-### Application Security
-
-#### Environment Variables
-- Never commit sensitive data to version control
-- Use strong, random secrets
-- Rotate secrets regularly
-
-#### Authentication
-- Implement proper authentication for production
-- Use JWT tokens with proper expiration
-- Implement rate limiting
-
-#### Network Security
-- Use HTTPS everywhere
-- Implement proper firewall rules
-- Monitor access logs
-
-### Stream Security
-
-#### SRT Security
-```bash
-# SRT with encryption
-srt://localhost:9000?streamid=live/input&passphrase=your-secret
-
-# SRT with access control
-srt://localhost:9000?streamid=live/input&streamid=allowed-id
-```
-
-#### Access Control
-- Implement IP whitelisting
-- Use authentication for stream endpoints
-- Monitor for unauthorized access attempts
 
 ## Scaling
 
 ### Horizontal Scaling
 
-#### Load Balancer Setup
-```nginx
-# Load balancer configuration
-upstream scte35_backend {
-    server server1:3000;
-    server server2:3000;
-    server server3:3000;
-}
+1. **Multiple Instances**
+   - Run multiple app instances on different ports
+   - Use load balancer to distribute traffic
+   - Implement session sharing with Redis
 
-server {
-    listen 443 ssl;
-    server_name your-domain.com;
-    
-    location / {
-        proxy_pass http://scte35_backend;
-        # ... other proxy settings
-    }
-}
-```
-
-#### Database Scaling
-```bash
-# Read replicas
-# Configure primary-replica replication
-# Use connection pooling
-
-# Example connection string with read replicas
-DATABASE_URL="postgresql://user:pass@primary-host,replica1-host,replica2-host/dbname"
-```
+2. **Database Scaling**
+   - Use read replicas for read operations
+   - Implement connection pooling
+   - Consider database sharding for large datasets
 
 ### Vertical Scaling
 
-#### Server Resources
+1. **Resource Upgrades**
+   - Increase CPU cores
+   - Add more RAM
+   - Use faster storage (NVMe SSD)
+
+2. **Hardware Acceleration**
+   - Enable GPU acceleration
+   - Use specialized hardware for encoding
+   - Implement dedicated network interfaces
+
+## Maintenance
+
+### Regular Tasks
+
+1. **Daily**
+   - Check application logs
+   - Monitor system resources
+   - Verify stream health
+
+2. **Weekly**
+   - Update dependencies
+   - Clean temporary files
+   - Review performance metrics
+
+3. **Monthly**
+   - Security updates
+   - Database optimization
+   - Backup verification
+
+### Update Procedure
+
 ```bash
-# Monitor resource usage
-htop
-df -h
-free -h
+# 1. Backup current version
+cp -r /app /app_backup_$(date +%Y%m%d)
 
-# Upgrade server resources as needed
-# Add more CPU cores
-# Increase RAM
-# Add faster storage
+# 2. Pull latest changes
+git pull origin main
+
+# 3. Install dependencies
+npm install
+
+# 4. Build application
+npm run build
+
+# 5. Restart services
+pm2 restart all
+
+# 6. Verify deployment
+curl http://localhost:3000/api/health
 ```
 
-#### Application Optimization
-```bash
-# Increase Node.js memory limit
-node --max-old-space-size=4096 server.ts
+---
 
-# Optimize database queries
-# Add indexing
-# Use connection pooling
-
-# Implement caching
-# Use Redis for session storage
-# Cache frequently accessed data
-```
-
-### CDN Integration
-
-#### Static Assets
-```nginx
-# Serve static assets via CDN
-location /static/ {
-    proxy_pass https://your-cdn-provider.com;
-}
-```
-
-#### Stream Distribution
-```bash
-# Use CDN for HLS/DASH streams
-# Configure edge caching
-# Implement geographic distribution
-```
-
-## Backup and Recovery
-
-### Database Backup
-```bash
-# PostgreSQL backup
-pg_dump scte35_encoder > backup_$(date +%Y%m%d_%H%M%S).sql
-
-# Automated backup script
-#!/bin/bash
-BACKUP_DIR="/backups"
-DATE=$(date +%Y%m%d_%H%M%S)
-pg_dump scte35_encoder > $BACKUP_DIR/backup_$DATE.sql
-```
-
-### Application Backup
-```bash
-# Backup application files
-tar -czf backup_$(date +%Y%m%d).tar.gz \
-  /path/to/application \
-  /etc/nginx/sites-available/scte35 \
-  /etc/letsencrypt/live/your-domain.com
-```
-
-### Recovery Procedure
-```bash
-# Restore database
-psql -h localhost -U scte35_user -d scte35_encoder < backup_file.sql
-
-# Restore application
-tar -xzf backup_file.tar.gz -C /
-
-# Restart services
-pm2 restart scte35-encoder
-sudo systemctl reload nginx
-```
-
-This deployment guide provides comprehensive instructions for deploying the SCTE-35 Encoder & Stream Injector in various environments, from development to production-scale deployments.
+**For additional support, please refer to the [USAGE_GUIDE.md](USAGE_GUIDE.md) or create an issue on GitHub.**

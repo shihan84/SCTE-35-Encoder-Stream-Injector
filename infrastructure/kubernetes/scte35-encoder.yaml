@@ -1,0 +1,225 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scte35-encoder
+  namespace: scte35-system
+  labels:
+    app: scte35-encoder
+    version: v1.0.0
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: scte35-encoder
+  template:
+    metadata:
+      labels:
+        app: scte35-encoder
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/api/metrics"
+    spec:
+      serviceAccountName: scte35-encoder
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: scte35-encoder
+        image: scte35-encoder:latest
+        ports:
+        - containerPort: 3000
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: scte35-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: scte35-secrets
+              key: redis-url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: scte35-secrets
+              key: jwt-secret
+        - name: FFMPEG_PATH
+          value: "/usr/bin/ffmpeg"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health/ready
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: config
+        configMap:
+          name: scte35-config
+      - name: tmp
+        emptyDir: {}
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+      - key: "scte35-workload"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scte35-encoder-service
+  namespace: scte35-system
+  labels:
+    app: scte35-encoder
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  - port: 9090
+    targetPort: 9090
+    protocol: TCP
+    name: metrics
+  selector:
+    app: scte35-encoder
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: scte35-encoder-ingress
+  namespace: scte35-system
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  tls:
+  - hosts:
+    - scte35-encoder.company.com
+    secretName: scte35-encoder-tls
+  rules:
+  - host: scte35-encoder.company.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: scte35-encoder-service
+            port:
+              number: 3000
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scte35-config
+  namespace: scte35-system
+data:
+  production.json: |
+    {
+      "app": {
+        "name": "SCTE-35 Enterprise Encoder",
+        "version": "1.0.0",
+        "environment": "production"
+      },
+      "security": {
+        "rateLimit": {
+          "windowMs": 900000,
+          "max": 1000
+        }
+      },
+      "streaming": {
+        "ffmpeg": {
+          "timeout": 30000,
+          "maxConcurrent": 50
+        }
+      }
+    }
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: scte35-secrets
+  namespace: scte35-system
+type: Opaque
+data:
+  database-url: <base64-encoded-database-url>
+  redis-url: <base64-encoded-redis-url>
+  jwt-secret: <base64-encoded-jwt-secret>
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scte35-encoder
+  namespace: scte35-system
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: scte35-system
+  name: scte35-encoder-role
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: scte35-encoder-rolebinding
+  namespace: scte35-system
+subjects:
+- kind: ServiceAccount
+  name: scte35-encoder
+  namespace: scte35-system
+roleRef:
+  kind: Role
+  name: scte35-encoder-role
+  apiGroup: rbac.authorization.k8s.io

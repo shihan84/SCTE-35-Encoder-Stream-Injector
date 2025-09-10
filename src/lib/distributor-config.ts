@@ -86,8 +86,8 @@ export function generateFFmpegArgs(config: DistributorStreamConfig): string[] {
     '-g', config.gop.toString(),
     '-bf', config.bFrames.toString(),
     '-b:v', `${config.videoBitrate}k`,
-    '-maxrate:v', `${config.videoBitrate * 1.5}k`,
-    '-bufsize:v', `${config.videoBitrate * 3}k`,
+    '-maxrate:v', '4000000',
+    '-bufsize:v', '8000000',
     '-aspect', config.aspectRatio,
     
     // Audio parameters

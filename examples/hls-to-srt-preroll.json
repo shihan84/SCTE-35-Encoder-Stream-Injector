@@ -1,0 +1,255 @@
+{
+  "examples": {
+    "basic_hls_to_srt": {
+      "description": "Basic HLS input to SRT output with SCTE-35 injection",
+      "input": {
+        "type": "hls",
+        "url": "https://cdn.itassist.one/BREAKING/NEWS/index.m3u8",
+        "format": "m3u8"
+      },
+      "output": {
+        "type": "srt",
+        "url": "srt://itassist.one:8888?streamid=#!::r=live/live,m=publish",
+        "format": "mpegts"
+      },
+      "scte35": {
+        "enabled": true,
+        "injection_points": [
+          {
+            "time": 30,
+            "duration": 30,
+            "type": "splice_insert",
+            "message": "0xFC301100000000000000FFFFFFFF0000004F1A2EFA"
+          }
+        ]
+      },
+      "ffmpeg_command": "ffmpeg -i \"https://cdn.itassist.one/BREAKING/NEWS/index.m3u8\" -f mpegts -metadata service_name=\"News Channel\" -c:v copy -c:a copy \"srt://itassist.one:8888?streamid=#!::r=live/live,m=publish\""
+    },
+    
+    "preroll_advertisement": {
+      "description": "HLS stream with pre-roll advertisement using SCTE-35",
+      "input": {
+        "type": "hls",
+        "url": "https://cdn.itassist.one/BREAKING/NEWS/index.m3u8"
+      },
+      "preroll": {
+        "enabled": true,
+        "type": "advertisement",
+        "url": "https://cdn.example.com/ads/preroll-30sec.mp4",
+        "duration": 30,
+        "scte35_trigger": "0xFC301100000000000000FFFFFFFF0000004F1A2EFA"
+      },
+      "output": {
+        "type": "srt",
+        "url": "srt://stream-server.com:8888?streamid=live/preroll,m=publish"
+      },
+      "quality": {
+        "video": {
+          "codec": "libx264",
+          "preset": "fast",
+          "crf": 23,
+          "resolution": "1920x1080"
+        },
+        "audio": {
+          "codec": "aac",
+          "bitrate": "128k",
+          "sample_rate": "48000"
+        }
+      },
+      "ffmpeg_command": "ffmpeg -i \"https://cdn.itassist.one/BREAKING/NEWS/index.m3u8\" -i \"https://cdn.example.com/ads/preroll-30sec.mp4\" -filter_complex \"[1:v][1:a][0:v][0:a]concat=n=2:v=1:a=1[v][a]\" -map \"[v]\" -map \"[a]\" -f mpegts -metadata scte35_out=30 -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k \"srt://stream-server.com:8888?streamid=live/preroll,m=publish\""
+    },
+
+    "live_news_with_ads": {
+      "description": "Live news stream with periodic ad insertion",
+      "input": {
+        "type": "hls",
+        "url": "https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_news24/t=3840/v=pv14/b=5070016/main.m3u8"
+      },
+      "ad_schedule": [
+        {
+          "time": "00:05:00",
+          "duration": 30,
+          "type": "commercial",
+          "url": "https://cdn.ads.com/commercial-1.mp4"
+        },
+        {
+          "time": "00:15:00", 
+          "duration": 60,
+          "type": "commercial",
+          "url": "https://cdn.ads.com/commercial-2.mp4"
+        },
+        {
+          "time": "00:25:00",
+          "duration": 30,
+          "type": "promo",
+          "url": "https://cdn.ads.com/promo-1.mp4"
+        }
+      ],
+      "output": {
+        "type": "srt",
+        "url": "srt://broadcast.server.com:8888?streamid=live/news-with-ads,latency=50,m=publish"
+      },
+      "scte35_messages": [
+        {
+          "trigger": "ad_start",
+          "message": "0xFC301100000000000000FFFFFFFF0000004F1A2EFA"
+        },
+        {
+          "trigger": "ad_end", 
+          "message": "0xFC301000000000000000FFFFFFFF0000004F1A2EFB"
+        }
+      ]
+    },
+
+    "sports_with_highlights": {
+      "description": "Sports stream with highlight reels and sponsor messages",
+      "input": {
+        "type": "hls",
+        "url": "https://sports-stream.example.com/live/game1/index.m3u8"
+      },
+      "preroll": {
+        "enabled": true,
+        "type": "sponsor",
+        "url": "https://cdn.sponsors.com/opening-sponsor.mp4",
+        "duration": 15
+      },
+      "midroll_schedule": [
+        {
+          "time": "00:20:00",
+          "content": "https://cdn.highlights.com/quarter1-highlights.mp4",
+          "duration": 45,
+          "type": "highlight_reel"
+        },
+        {
+          "time": "00:45:00",
+          "content": "https://cdn.sponsors.com/halftime-sponsor.mp4", 
+          "duration": 30,
+          "type": "sponsor_message"
+        }
+      ],
+      "output": {
+        "type": "srt",
+        "url": "srt://sports-cdn.com:8888?streamid=live/game1-enhanced,bitrate=8000000,m=publish"
+      },
+      "encoding": {
+        "video": "-c:v libx264 -preset medium -crf 20 -s 1920x1080 -r 60",
+        "audio": "-c:a aac -b:a 192k -ar 48000 -ac 2"
+      }
+    },
+
+    "educational_with_chapters": {
+      "description": "Educational content with chapter breaks and study materials",
+      "input": {
+        "type": "hls", 
+        "url": "https://education.example.com/courses/math101/lesson1.m3u8"
+      },
+      "chapter_breaks": [
+        {
+          "time": "00:10:00",
+          "title": "Introduction to Algebra",
+          "material": "https://cdn.edu.com/materials/chapter1.mp4",
+          "duration": 20
+        },
+        {
+          "time": "00:25:00",
+          "title": "Basic Equations", 
+          "material": "https://cdn.edu.com/materials/chapter2.mp4",
+          "duration": 25
+        }
+      ],
+      "output": {
+        "type": "srt",
+        "url": "srt://edu-stream.com:8888?streamid=courses/math101,quality=hd,m=publish"
+      },
+      "accessibility": {
+        "captions": true,
+        "audio_description": true,
+        "sign_language": false
+      }
+    },
+
+    "multi_quality_adaptive": {
+      "description": "Adaptive bitrate streaming with multiple quality outputs",
+      "input": {
+        "type": "hls",
+        "url": "https://cdn.itassist.one/BREAKING/NEWS/index.m3u8"
+      },
+      "outputs": [
+        {
+          "quality": "1080p",
+          "url": "srt://cdn1.example.com:8888?streamid=live/hd,m=publish",
+          "encoding": "-c:v libx264 -preset fast -crf 23 -s 1920x1080 -b:v 5000k"
+        },
+        {
+          "quality": "720p", 
+          "url": "srt://cdn2.example.com:8888?streamid=live/sd,m=publish",
+          "encoding": "-c:v libx264 -preset fast -crf 25 -s 1280x720 -b:v 2500k"
+        },
+        {
+          "quality": "480p",
+          "url": "srt://cdn3.example.com:8888?streamid=live/mobile,m=publish", 
+          "encoding": "-c:v libx264 -preset fast -crf 28 -s 854x480 -b:v 1000k"
+        }
+      ],
+      "audio_encoding": "-c:a aac -b:a 128k -ar 48000",
+      "scte35_sync": true
+    }
+  },
+
+  "common_configurations": {
+    "srt_parameters": {
+      "latency_modes": {
+        "ultra_low": "latency=20",
+        "low": "latency=40", 
+        "normal": "latency=120",
+        "high": "latency=200"
+      },
+      "security": {
+        "encrypted": "passphrase=your_secret_key",
+        "authenticated": "user=username,pass=password"
+      },
+      "network": {
+        "bandwidth_limit": "maxbw=10000000",
+        "packet_size": "mss=1316",
+        "connection_timeout": "conntimeo=5000"
+      }
+    },
+
+    "scte35_message_types": {
+      "splice_insert": {
+        "hex": "0xFC301100000000000000FFFFFFFF0000004F1A2EFA",
+        "description": "Standard ad break insertion"
+      },
+      "time_signal": {
+        "hex": "0xFC301400000000000000FFFFFFFF0000004F1A2EFB", 
+        "description": "Time signal for synchronization"
+      },
+      "splice_null": {
+        "hex": "0xFC300500000000000000FFFFFFFF0000004F1A2EFC",
+        "description": "Cancel previous splice command"
+      }
+    },
+
+    "quality_presets": {
+      "broadcast": {
+        "video": "-c:v libx264 -preset slow -crf 18 -profile:v high -level 4.0",
+        "audio": "-c:a aac -b:a 192k -ar 48000 -ac 2"
+      },
+      "streaming": {
+        "video": "-c:v libx264 -preset fast -crf 23 -profile:v main -level 3.1", 
+        "audio": "-c:a aac -b:a 128k -ar 48000 -ac 2"
+      },
+      "mobile": {
+        "video": "-c:v libx264 -preset fast -crf 28 -profile:v baseline -level 3.0",
+        "audio": "-c:a aac -b:a 96k -ar 44100 -ac 2"
+      }
+    }
+  },
+
+  "testing_commands": {
+    "validate_hls": "ffprobe -v quiet -print_format json -show_streams \"https://cdn.itassist.one/BREAKING/NEWS/index.m3u8\"",
+    "test_srt_connection": "ffmpeg -f lavfi -i testsrc=size=1280x720:rate=25 -t 10 -c:v libx264 -f mpegts \"srt://itassist.one:8888?streamid=test,m=publish\"",
+    "validate_scte35": "echo \"0xFC301100000000000000FFFFFFFF0000004F1A2EFA\" | xxd -r -p | hexdump -C",
+    "monitor_stream": "ffprobe -v quiet -print_format json -show_packets -select_streams d \"output.ts\""
+  }
+}

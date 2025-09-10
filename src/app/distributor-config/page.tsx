@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Settings, Broadcast, Zap, AlertTriangle, Copy, Download, Database, Network, Shield } from "lucide-react";
+import { ArrowLeft, Settings, Radio, Zap, AlertTriangle, Copy, Download, Database, Network, Shield } from "lucide-react";
 
 interface DistributorStreamConfig {
   // Stream Identification
@@ -256,7 +256,7 @@ CRASH_OUT_COMMAND=${cfg.crashOutCommand}`;
               <div className="medialive-panel rounded-lg">
                 <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
                   <div className="flex items-center space-x-2">
-                    <Broadcast className="w-5 h-5 text-[#ff9900]" />
+                    <Radio className="w-5 h-5 text-[#ff9900]" />
                     <h2 className="medialive-panel-title">Stream Identification</h2>
                   </div>
                   <p className="medialive-panel-subtitle mt-1">

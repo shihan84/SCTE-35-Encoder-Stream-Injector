@@ -137,12 +137,32 @@ export default function SCTE35Tools() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto p-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="medialive-tabs">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="converter" className="medialive-tab">Data Converter</TabsTrigger>
-            <TabsTrigger value="analyzer" className="medialive-tab">Analyzer</TabsTrigger>
-            <TabsTrigger value="generator" className="medialive-tab">Generator</TabsTrigger>
-            <TabsTrigger value="ffmpeg" className="medialive-tab">FFmpeg Tools</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="medialive-tabs w-full">
+          <TabsList className="flex w-full bg-[#16191f] border border-[#232f3e] rounded-lg p-1">
+            <TabsTrigger 
+              value="converter" 
+              className="medialive-tab flex-1 data-[state=active]:bg-[#ff9900] data-[state=active]:text-[#0f1419] data-[state=active]:font-semibold"
+            >
+              Data Converter
+            </TabsTrigger>
+            <TabsTrigger 
+              value="analyzer" 
+              className="medialive-tab flex-1 data-[state=active]:bg-[#ff9900] data-[state=active]:text-[#0f1419] data-[state=active]:font-semibold"
+            >
+              Analyzer
+            </TabsTrigger>
+            <TabsTrigger 
+              value="generator" 
+              className="medialive-tab flex-1 data-[state=active]:bg-[#ff9900] data-[state=active]:text-[#0f1419] data-[state=active]:font-semibold"
+            >
+              Generator
+            </TabsTrigger>
+            <TabsTrigger 
+              value="ffmpeg" 
+              className="medialive-tab flex-1 data-[state=active]:bg-[#ff9900] data-[state=active]:text-[#0f1419] data-[state=active]:font-semibold"
+            >
+              FFmpeg Tools
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="converter" className="space-y-6">

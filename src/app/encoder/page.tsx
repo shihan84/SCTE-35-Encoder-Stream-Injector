@@ -598,12 +598,18 @@ export default function Encoder() {
                 </p>
               </div>
               <div className="medialive-panel-content">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="medialive-tabs">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="splice-insert" className="medialive-tab">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="medialive-tabs w-full">
+                  <TabsList className="flex w-full bg-[#16191f] border border-[#232f3e] rounded-lg p-1">
+                    <TabsTrigger 
+                      value="splice-insert" 
+                      className="medialive-tab flex-1 data-[state=active]:bg-[#ff9900] data-[state=active]:text-[#0f1419] data-[state=active]:font-semibold"
+                    >
                       Splice Insert
                     </TabsTrigger>
-                    <TabsTrigger value="time-signal" className="medialive-tab">
+                    <TabsTrigger 
+                      value="time-signal" 
+                      className="medialive-tab flex-1 data-[state=active]:bg-[#ff9900] data-[state=active]:text-[#0f1419] data-[state=active]:font-semibold"
+                    >
                       Time Signal
                     </TabsTrigger>
                   </TabsList>

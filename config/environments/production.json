@@ -1,0 +1,99 @@
+{
+  "app": {
+    "name": "SCTE-35 Enterprise Encoder",
+    "version": "1.0.0",
+    "environment": "production",
+    "debug": false,
+    "logLevel": "info"
+  },
+  "server": {
+    "port": 3000,
+    "host": "0.0.0.0",
+    "timeout": 30000,
+    "maxConnections": 1000,
+    "keepAlive": true
+  },
+  "database": {
+    "url": "${DATABASE_URL}",
+    "pool": {
+      "min": 5,
+      "max": 20,
+      "idleTimeoutMillis": 30000,
+      "connectionTimeoutMillis": 2000
+    },
+    "ssl": true,
+    "logging": false
+  },
+  "redis": {
+    "url": "${REDIS_URL}",
+    "password": "${REDIS_PASSWORD}",
+    "db": 0,
+    "retryDelayOnFailover": 100,
+    "maxRetriesPerRequest": 3
+  },
+  "security": {
+    "jwt": {
+      "secret": "${JWT_SECRET}",
+      "expiresIn": "24h",
+      "refreshExpiresIn": "7d"
+    },
+    "bcrypt": {
+      "rounds": 12
+    },
+    "rateLimit": {
+      "windowMs": 900000,
+      "max": 100,
+      "skipSuccessfulRequests": false
+    },
+    "cors": {
+      "origin": ["${ALLOWED_ORIGINS}"],
+      "credentials": true,
+      "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "allowedHeaders": ["Content-Type", "Authorization", "X-API-Key"]
+    }
+  },
+  "streaming": {
+    "ffmpeg": {
+      "path": "${FFMPEG_PATH}",
+      "timeout": 30000,
+      "maxConcurrent": 10,
+      "bufferSize": "10MB"
+    },
+    "scte35": {
+      "pid": 1280,
+      "timeout": 5000,
+      "retryAttempts": 3
+    },
+    "hls": {
+      "segmentDuration": 4,
+      "playlistSize": 10,
+      "deleteSegments": true
+    }
+  },
+  "monitoring": {
+    "prometheus": {
+      "enabled": true,
+      "port": 9090,
+      "path": "/metrics"
+    },
+    "healthCheck": {
+      "interval": 30000,
+      "timeout": 5000,
+      "retries": 3
+    },
+    "logging": {
+      "level": "info",
+      "format": "json",
+      "outputs": ["console", "file", "syslog"]
+    }
+  },
+  "features": {
+    "authentication": true,
+    "rbac": true,
+    "auditLogging": true,
+    "metrics": true,
+    "tracing": true,
+    "caching": true,
+    "rateLimiting": true
+  }
+}

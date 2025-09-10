@@ -39,11 +39,76 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# development
 local-*
 .claude
 .z-ai-config
 dev.log
 test
 prompt
-
 server.log
+
+# test files
+test-*
+*.test.*
+*.spec.*
+coverage/
+test-results/
+playwright-report/
+
+# temporary files
+*.tmp
+*.temp
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# SCTE-35 test files
+scte35_*
+data_packets.csv
+stream_info.txt
+sample.ts
+test_output.ts
+
+# FFmpeg output files
+*.ts
+*.mp4
+*.m3u8
+*.bin
+*.hex
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build artifacts
+dist/
+build/
+out/
+.next/

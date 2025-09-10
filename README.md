@@ -1,331 +1,231 @@
-# 📺 SCTE-35 Encoder & Stream Injector
+# 🎬 SCTE-35 Stream Injector
 
-A professional web-based solution for creating SCTE-35 cues and injecting them into live video streams. Built with modern web technologies for broadcast and streaming professionals.
+A professional-grade SCTE-35 stream injection system with real-time monitoring, pre-roll support, and enterprise features for broadcast and streaming applications.
 
-## 🎯 Overview
+## ✨ Features
 
-The SCTE-35 Encoder & Stream Injector is a comprehensive system that enables broadcasters and streaming professionals to:
-
-- **Encode SCTE-35 messages** with full parameter control
-- **Inject cues into live streams** in real-time
-- **Monitor stream health** and performance metrics
-- **Support multiple protocols** (SRT, HLS, DASH, RTMP)
-- **Manage scheduled injections** with precision timing
-
-## ✨ Key Features
-
-### 🎬 SCTE-35 Encoder
-- **Full Command Support**: Splice Insert and Time Signal commands
-- **Comprehensive Configuration**: All SCTE-35 parameters and descriptors
-- **Multiple Output Formats**: Base64 and Hex encoding
-- **Real-time Validation**: Input validation and error handling
-- **CRC32 Calculation**: Proper checksum generation
-
-### 🌊 Stream Injection
-- **Multi-Protocol Support**: SRT, HLS, DASH, and RTMP
-- **Real-time Injection**: Live SCTE-35 cue insertion
-- **Scheduled Injections**: Time-based cue scheduling
-- **Manual Injection**: Immediate cue injection capability
-- **Stream Management**: Start/stop/control stream operations
-
-### 📊 Stream Monitoring
-- **Real-time Metrics**: Bitrate, viewers, uptime, packet loss, latency
-- **System Health**: CPU, memory, disk, network monitoring
-- **Activity Logging**: SCTE-35 injection and detection tracking
-- **WebSocket Support**: Live data updates and notifications
-- **Alert System**: Configurable alerts for critical issues
-
-### 🎨 Professional UI
-- **Responsive Design**: Works on desktop and mobile devices
-- **Intuitive Interface**: Easy-to-use tabbed navigation
-- **Real-time Updates**: Live data visualization
-- **Dark/Light Mode**: Theme support for all environments
-- **Accessibility**: WCAG-compliant design
+- **🎯 SCTE-35 Injection**: Real-time SCTE-35 message injection into live streams
+- **📡 HLS to SRT**: Convert HLS input streams to SRT output with SCTE-35 support
+- **🎬 Pre-Roll Support**: Seamless pre-roll advertisement integration
+- **⏰ Time Synchronization**: NTP-based time sync for precise injection timing
+- **📊 Visual Timeline**: Real-time event monitoring and timeline visualization
+- **🖥️ Professional Dashboard**: Modern web interface for stream management
+- **🔧 FFmpeg Integration**: Advanced FFmpeg command builder and execution
+- **📱 Responsive Design**: Works on desktop, tablet, and mobile devices
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18.x or higher
-- npm 8.x or higher
-- Modern web browser
+
+- **Node.js** 18+ 
+- **FFmpeg** with SCTE-35 support
+- **Windows 10/11**, **macOS 10.15+**, or **Linux Ubuntu 20.04+**
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/shihan84/SCTE-35-Encoder-Stream-Injector.git
-   cd SCTE-35-Encoder-Stream-Injector
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-### Basic Usage
-
-#### Encode SCTE-35 Cue
-1. Navigate to the **Encoder** page
-2. Configure **Splice Info Section** parameters
-3. Select **Command Type** (Splice Insert or Time Signal)
-4. Set **Command Parameters** (event ID, timing, duration, etc.)
-5. Choose **Output Format** (Base64 or Hex)
-6. Click **"Encode SCTE-35"**
-7. Copy or download the encoded result
-
-#### Inject into Live Stream
-1. Navigate to the **Stream Injection** page
-2. Configure **Stream Settings** (input/output URLs, protocol, bitrate)
-3. Click **"Start Stream"** to begin streaming
-4. Add **Injection Points** with timing and SCTE-35 data
-5. Enable **Auto-inject** or use **Manual Injection**
-6. Monitor **Stream Status** and injection results
-
-#### Monitor Stream Health
-1. Navigate to the **Monitor** page
-2. View **Real-time Metrics** for stream performance
-3. Check **System Health** for resource usage
-4. Monitor **SCTE-35 Activity** for injection events
-5. Set up **Alerts** for critical issues
-
-## 🏗️ Architecture
-
-### Frontend
-- **Next.js 15** with App Router
-- **TypeScript** for type safety
-- **Tailwind CSS** for styling
-- **shadcn/ui** for components
-- **Framer Motion** for animations
-- **Zustand** for state management
-
-### Backend
-- **Next.js API Routes** for serverless functions
-- **WebSocket** for real-time communication
-- **Prisma** ORM for database operations
-- **Socket.io** for real-time updates
-
-### Protocols Supported
-- **SRT** (Secure Reliable Transport)
-- **HLS** (HTTP Live Streaming)
-- **DASH** (Dynamic Adaptive Streaming)
-- **RTMP** (Real-Time Messaging Protocol)
-
-## 📁 Project Structure
-
-```
-src/
-├── app/                                      # Next.js App Router
-│   ├── page.tsx                             # Main landing page
-│   ├── encoder/                             # SCTE-35 encoder page
-│   ├── stream-injection/                    # Stream injection page
-│   ├── monitor/                             # Stream monitoring page
-│   └── api/                                 # API routes
-│       ├── scte35/encode/                   # SCTE-35 encoding API
-│       └── stream/                          # Stream management APIs
-├── components/                              # React components
-│   ├── ui/                                 # shadcn/ui components
-│   └── stream-injection.tsx               # Stream injection component
-├── hooks/                                   # Custom React hooks
-└── lib/                                     # Utility functions
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-Create a `.env` file in the root directory:
-
 ```bash
-# Application
-NODE_ENV=development
-PORT=3000
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
+# Clone the repository
+git clone https://github.com/your-username/scte35-stream-injector.git
+cd scte35-stream-injector
 
-# Database
-DATABASE_URL="postgresql://username:password@localhost:5432/database"
-
-# Stream Configuration
-SRT_INPUT_PORT=9000
-SRT_OUTPUT_PORT=9001
-RTMP_PORT=1935
-HLS_OUTPUT_DIR=/var/www/hls
-DASH_OUTPUT_DIR=/var/www/dash
-
-# Security
-JWT_SECRET=your-jwt-secret-key
-ENCRYPTION_KEY=your-encryption-key
-
-# Logging
-LOG_LEVEL=info
-```
-
-### Stream Configuration Examples
-
-#### SRT Stream
-```javascript
-{
-  inputUrl: "srt://localhost:9000?streamid=live/input",
-  outputUrl: "srt://localhost:9001?streamid=live/output",
-  streamType: "srt",
-  bitrate: 5000,
-  resolution: "1920x1080",
-  codec: "h264"
-}
-```
-
-#### HLS Stream
-```javascript
-{
-  inputUrl: "http://input-server/live/stream.m3u8",
-  outputUrl: "/var/www/hls/output/stream.m3u8",
-  streamType: "hls",
-  bitrate: 5000,
-  resolution: "1920x1080",
-  codec: "h264"
-}
-```
-
-## 📚 Documentation
-
-- **[Deployment Guide](DEPLOYMENT.md)** - Complete deployment instructions
-- **[User Manual](USER_MANUAL.md)** - Detailed user documentation
-- **[API Reference](USER_MANUAL.md#api-reference)** - API documentation
-
-## 🚀 Deployment
-
-### Development Deployment
-```bash
-npm install
-npm run dev
-```
-
-### Production Deployment
-See [DEPLOYMENT.md](DEPLOYMENT.md) for comprehensive deployment instructions.
-
-### Quick Production Setup
-```bash
 # Install dependencies
 npm install
 
-# Build application
-npm run build
-
-# Start with PM2 (recommended)
-pm2 start server.ts --name "scte35-encoder"
-
-# Configure PM2 for startup
-pm2 startup
-pm2 save
+# Start the development server
+npm run dev
 ```
 
-## 🧪 Testing
+Visit `http://localhost:3000` to access the dashboard.
 
-Run the comprehensive test suite:
+### Quick Test
+
 ```bash
-node test-all-tabs.js
+# Linux/macOS
+./examples/quick-start.sh check
+
+# Windows PowerShell
+.\examples\quick-start.ps1 check
 ```
 
-This will test all pages, APIs, and functionality to ensure everything is working correctly.
+## 📖 Usage
 
-## 🔮 API Usage
+### Basic HLS to SRT Streaming
 
-### SCTE-35 Encoding
-```javascript
-const response = await fetch('/api/scte35/encode', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    spliceInfo: { /* configuration */ },
-    command: { /* command parameters */ },
-    commandType: 'splice-insert'
-  })
-});
-
-const result = await response.json();
-console.log(result.base64); // Encoded SCTE-35 data
+```bash
+ffmpeg -i "https://cdn.itassist.one/BREAKING/NEWS/index.m3u8" \
+  -f mpegts \
+  -metadata service_name="News Channel" \
+  -c:v copy -c:a copy \
+  "srt://itassist.one:8888?streamid=#!::r=live/live,m=publish"
 ```
 
-### Stream Management
-```javascript
-// Start stream
-await fetch('/api/stream/start', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(streamConfig)
-});
+### Pre-Roll Advertisement
 
-// Inject SCTE-35
-await fetch('/api/stream/inject', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ scte35Data: encodedData })
-});
+```bash
+ffmpeg -i "preroll.mp4" -i "main-stream.m3u8" \
+  -filter_complex "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[v][a]" \
+  -map "[v]" -map "[a]" -f mpegts -metadata scte35_out=30 \
+  -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k \
+  "srt://server.com:8888?streamid=live/preroll,m=publish"
 ```
 
-### Real-time Updates
-```javascript
-const ws = new WebSocket('ws://localhost:3000/api/stream/ws');
+### SCTE-35 Injection
 
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  console.log('Real-time update:', data);
-};
+```bash
+ffmpeg -i "input.m3u8" \
+  -f mpegts \
+  -metadata scte35_splice_insert="0xFC301100000000000000FFFFFFFF0000004F1A2EFA" \
+  -c:v copy -c:a copy \
+  "srt://output.com:8888?streamid=live/splice,m=publish"
 ```
 
-## 🎯 Use Cases
+## 🎛️ Dashboard Features
 
-### Broadcast Television
-- **Advertisement Insertion**: Precise ad break timing
-- **Program Scheduling**: Automated program start/end cues
-- **Emergency Alerts**: Immediate emergency message insertion
-- **Content Rating**: Automatic rating information insertion
+### Stream Setup
+- **Input Configuration**: HLS stream URL setup
+- **Output Configuration**: SRT destination configuration
+- **Quality Settings**: Resolution and bitrate selection
+- **Audio Settings**: Audio encoding configuration
 
-### Live Streaming
-- **Ad Break Coordination**: Synchronized ad insertion across platforms
-- **Content Switching**: Seamless program transitions
-- **Metadata Injection**: Real-time metadata updates
-- **Quality Monitoring**: Stream health and performance tracking
+### SCTE-35 Tools
+- **Message Builder**: Create custom SCTE-35 messages
+- **Cue Types**: Splice insert, time signal, and more
+- **Timing Control**: Precise injection timing
+- **Validation**: Message format verification
 
-### Digital Signage
-- **Scheduled Content**: Automated content changes
-- **Emergency Messaging**: Immediate alert systems
-- **Advertising**: Dynamic ad insertion
-- **Monitoring**: Remote system health checks
+### Injection Points
+- **Time-based Injection**: Schedule injection points
+- **Pre-Roll Setup**: Configure pre-roll content
+- **Duration Control**: Set ad break duration
+- **Real-time Monitoring**: Live injection status
 
-## 🔒 Security Considerations
+### Live Monitor
+- **Stream Status**: Real-time stream health
+- **Performance Metrics**: Latency, bitrate, quality
+- **Error Tracking**: Connection and encoding errors
+- **Timeline Visualization**: Event timeline with zoom controls
 
-### Application Security
-- **Input Validation**: All user inputs are validated and sanitized
-- **Authentication**: JWT-based authentication for protected routes
-- **Rate Limiting**: API endpoints are rate-limited to prevent abuse
-- **HTTPS**: Secure communication in production environments
+### Advanced Features
+- **FFmpeg Command Builder**: Visual command construction
+- **Time Synchronization**: NTP-based time sync
+- **Hardware Acceleration**: GPU acceleration support
+- **Multi-Quality Output**: Adaptive bitrate streaming
 
-### Stream Security
-- **Access Control**: Configurable access controls for stream endpoints
-- **Encryption**: Support for encrypted SRT streams
-- **Authentication**: Stream-level authentication options
-- **Monitoring**: Access logging and suspicious activity detection
+## 🔧 API Usage
+
+### Start Stream
+
+```bash
+curl -X POST http://localhost:3000/api/stream/start \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": "https://cdn.itassist.one/BREAKING/NEWS/index.m3u8",
+    "output": "srt://itassist.one:8888?streamid=#!::r=live/live,m=publish",
+    "preRoll": {
+      "enabled": true,
+      "url": "https://cdn.example.com/ad.mp4",
+      "duration": 30
+    }
+  }'
+```
+
+### Inject SCTE-35
+
+```bash
+curl -X POST http://localhost:3000/api/stream/inject \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "0xFC301100000000000000FFFFFFFF0000004F1A2EFA",
+    "timestamp": "2024-09-10T12:00:00Z",
+    "duration": 30
+  }'
+```
+
+### Get Stream Status
+
+```bash
+curl http://localhost:3000/api/stream/status
+```
+
+## 📚 Configuration Examples
+
+See `examples/hls-to-srt-preroll.json` for comprehensive configuration examples including:
+
+- Basic HLS to SRT streaming
+- Pre-roll advertisement setup
+- Live news with ad insertion
+- Sports with highlights
+- Educational content with chapters
+- Multi-quality adaptive streaming
+
+## 🛠️ Development
+
+### Project Structure
+
+```
+src/
+├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   ├── stream-injection/  # Main dashboard
+│   ├── scte35-tools/     # SCTE-35 tools
+│   └── monitor/          # Stream monitoring
+├── components/            # React components
+│   ├── time-sync-clock.tsx
+│   ├── timeline-monitor.tsx
+│   └── ffmpeg-command-builder.tsx
+└── lib/                  # Utility functions
+```
+
+### Available Scripts
+
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run type-check   # Run TypeScript checks
+```
+
+## 🔒 Security
+
+- **Input Validation**: All inputs are validated and sanitized
+- **Command Injection Protection**: FFmpeg commands are safely constructed
+- **Rate Limiting**: API endpoints have rate limiting
+- **CORS Configuration**: Proper CORS headers for cross-origin requests
 
 ## 📊 Performance
 
-### System Requirements
-- **Minimum**: 2 CPU cores, 4GB RAM, 20GB storage
-- **Recommended**: 4+ CPU cores, 8GB+ RAM, 50GB+ SSD
-- **Enterprise**: Load balancer, multiple servers, database clustering
+- **Hardware Acceleration**: NVIDIA CUDA, Intel Quick Sync support
+- **Low Latency**: Optimized for real-time streaming
+- **Memory Efficient**: Stream processing with minimal memory usage
+- **Scalable**: Supports multiple concurrent streams
 
-### Scalability
-- **Horizontal Scaling**: Load balancer with multiple application instances
-- **Vertical Scaling**: Increased server resources and optimization
-- **Database Scaling**: Read replicas and connection pooling
-- **CDN Integration**: Content delivery for static assets and streams
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Stream not starting**: Check FFmpeg installation and stream URL accessibility
+2. **SCTE-35 not injecting**: Verify message format and stream compatibility
+3. **Pre-roll not playing**: Ensure media file is accessible and properly formatted
+4. **SRT connection failed**: Check network connectivity and firewall settings
+
+### Debug Commands
+
+```bash
+# Test HLS input
+ffprobe "https://cdn.itassist.one/BREAKING/NEWS/index.m3u8"
+
+# Test SRT output
+ffmpeg -f lavfi -i testsrc=size=1280x720:rate=25 -t 10 \
+  -c:v libx264 -f mpegts "srt://server.com:8888?streamid=test,m=publish"
+
+# Validate SCTE-35 message
+echo "0xFC301100000000000000FFFFFFFF0000004F1A2EFA" | xxd -r -p | hexdump -C
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
 
@@ -335,57 +235,20 @@ ws.onmessage = (event) => {
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-### Development Guidelines
-- Follow the existing code style
-- Add tests for new features
-- Update documentation as needed
-- Ensure all tests pass before submitting
+## 📞 Support
 
-## 🐛 Troubleshooting
-
-### Common Issues
-
-#### Application Won't Start
-- Check Node.js version (requires 18.x+)
-- Verify all dependencies are installed
-- Check port 3000 availability
-
-#### Stream Issues
-- Verify input URL accessibility
-- Check network connectivity
-- Ensure proper port configuration
-
-#### Encoding Problems
-- Validate all required fields are filled
-- Check SCTE-35 parameter values
-- Verify command type matches configuration
-
-### Getting Help
-
-- **Documentation**: Check [USER_MANUAL.md](USER_MANUAL.md)
-- **Issues**: [GitHub Issues](https://github.com/shihan84/SCTE-35-Encoder-Stream-Injector/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/shihan84/SCTE-35-Encoder-Stream-Injector/discussions)
-
-## 📄 License
-
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+- **Documentation**: Check the [USAGE_GUIDE.md](USAGE_GUIDE.md) for detailed instructions
+- **Issues**: Report bugs and request features on [GitHub Issues](https://github.com/your-username/scte35-stream-injector/issues)
+- **Discussions**: Join community discussions on [GitHub Discussions](https://github.com/your-username/scte35-stream-injector/discussions)
 
 ## 🙏 Acknowledgments
 
-- **SCTE-35 Standard**: Society of Cable Telecommunications Engineers
-- **Next.js Team**: For the excellent React framework
-- **shadcn/ui**: For the beautiful component library
-- **Contributors**: Everyone who has contributed to this project
-
-## 📞 Contact
-
-For support, questions, or feature requests:
-- **GitHub Issues**: [Create an issue](https://github.com/shihan84/SCTE-35-Encoder-Stream-Injector/issues)
-- **Email**: [Your support email]
-- **Discussions**: [GitHub Discussions](https://github.com/shihan84/SCTE-35-Encoder-Stream-Injector/discussions)
+- **FFmpeg** for multimedia processing capabilities
+- **Next.js** for the React framework
+- **Tailwind CSS** for styling
+- **Lucide React** for icons
+- **SuperKabuki** for SCTE-35 FFmpeg patches
 
 ---
 
-Built with ❤️ for the broadcast and streaming community.
-
-**SCTE-35 Encoder & Stream Injector** - Professional tools for professional broadcasters. 🚀📺
+**Made with ❤️ for the broadcast and streaming community**

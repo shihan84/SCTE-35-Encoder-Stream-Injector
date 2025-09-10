@@ -12,8 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Play, Pause, Square, Settings, Monitor, Copy, Download, ArrowLeft, Zap, Activity, Network, Database, Shield } from "lucide-react";
+import { Play, Pause, Square, Settings, Monitor, Copy, Download, ArrowLeft, Zap, Activity, Network, Database, Shield, Radio } from "lucide-react";
 import FFmpegCommandBuilder from "@/components/ffmpeg-command-builder";
+import TimeSyncClock from "@/components/time-sync-clock";
 
 interface StreamConfig {
   inputUrl: string;
@@ -70,8 +71,8 @@ interface StreamStatus {
 export default function StreamInjection() {
   const [activeTab, setActiveTab] = useState("config");
   const [streamConfig, setStreamConfig] = useState<StreamConfig>({
-    inputUrl: "",
-    outputUrl: "",
+    inputUrl: "https://cdn.itassist.one/BREAKING/NEWS/index.m3u8",
+    outputUrl: "srt://itassist.one:8888?streamid=#!::r=live/live,m=publish",
     streamType: "srt",
     
     // Distributor Requirements - Default Values
@@ -317,14 +318,51 @@ export default function StreamInjection() {
         </div>
       </div>
 
+      {/* Time Sync Clock */}
+      <div className="max-w-7xl mx-auto px-6 pt-4">
+        <TimeSyncClock 
+          onTimeUpdate={(timestamp) => {
+            // Update injection timing based on synchronized time
+            console.log('Synchronized time:', new Date(timestamp).toISOString());
+          }}
+          showSyncStatus={true}
+        />
+      </div>
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto p-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="medialive-tabs">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="config" className="medialive-tab">Stream Config</TabsTrigger>
-            <TabsTrigger value="injection" className="medialive-tab">Injection Points</TabsTrigger>
-            <TabsTrigger value="monitor" className="medialive-tab">Monitor</TabsTrigger>
-            <TabsTrigger value="encoder" className="medialive-tab">SCTE-35 Encoder</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="medialive-tabs w-full">
+          <TabsList className="grid w-full grid-cols-5 bg-[#16191f] border border-[#232f3e] rounded-lg p-5 gap-[80px]">
+            <TabsTrigger 
+              value="config" 
+              className="medialive-tab data-[state=active]:bg-[#ff9900] data-[state=active]:text-[#0f1419] data-[state=active]:font-semibold px-3 py-2 text-xs"
+            >
+              Stream Setup
+            </TabsTrigger>
+            <TabsTrigger 
+              value="encoder" 
+              className="medialive-tab data-[state=active]:bg-[#ff9900] data-[state=active]:text-[#0f1419] data-[state=active]:font-semibold px-3 py-2 text-xs"
+            >
+              SCTE-35 Tools
+            </TabsTrigger>
+            <TabsTrigger 
+              value="injection" 
+              className="medialive-tab data-[state=active]:bg-[#ff9900] data-[state=active]:text-[#0f1419] data-[state=active]:font-semibold px-3 py-2 text-xs"
+            >
+              Injection Points
+            </TabsTrigger>
+            <TabsTrigger 
+              value="monitor" 
+              className="medialive-tab data-[state=active]:bg-[#ff9900] data-[state=active]:text-[#0f1419] data-[state=active]:font-semibold px-3 py-2 text-xs"
+            >
+              Live Monitor
+            </TabsTrigger>
+            <TabsTrigger 
+              value="advanced" 
+              className="medialive-tab data-[state=active]:bg-[#ff9900] data-[state=active]:text-[#0f1419] data-[state=active]:font-semibold px-3 py-2 text-xs"
+            >
+              Advanced
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="config" className="space-y-6">
@@ -745,6 +783,31 @@ export default function StreamInjection() {
                       ))
                     )}
                   </div>
+
+                  {/* Time Synchronization for Injection */}
+                  <div className="border-t border-[#232f3e] pt-4 mt-4">
+                    <div className="text-sm text-[#ff9900] mb-2">Time Synchronization</div>
+                    <div className="bg-[#16191f] p-3 rounded-lg">
+                      <div className="text-xs text-[#ff9900] mb-2">Current Stream Time Reference</div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-[#ff9900]">Stream Time:</span>
+                          <div className="font-mono text-[#ff9900]">
+                            {new Date().toLocaleTimeString('en-US', { hour12: false })}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-[#ff9900]">Next Injection:</span>
+                          <div className="font-mono text-[#ff9900]">
+                            {injectionPoints.length > 0 ? 
+                              `${Math.min(...injectionPoints.map(p => p.time))}s` : 
+                              'None'
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -900,26 +963,226 @@ export default function StreamInjection() {
           </TabsContent>
 
           <TabsContent value="encoder" className="space-y-6">
-            {/* SCTE-35 Encoder */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* SCTE-35 Message Builder */}
             <div className="medialive-panel rounded-lg">
               <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
                 <div className="flex items-center space-x-2">
-                  <Zap className="w-5 h-5 text-[#ff9900]" />
-                  <h2 className="medialive-panel-title">SCTE-35 Encoder</h2>
+                    <Radio className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">SCTE-35 Message Builder</h2>
                 </div>
                 <p className="medialive-panel-subtitle mt-1">
-                  Quick access to SCTE-35 encoding functionality
+                    Create and encode SCTE-35 messages
                 </p>
               </div>
-              <div className="medialive-panel-content text-center">
-                <p className="text-[#a0aec0] mb-4">
-                  Use the dedicated SCTE-35 Encoder page for comprehensive encoding options
-                </p>
-                <Link href="/encoder">
-                  <Button className="medialive-button medialive-button-primary">
-                    Open SCTE-35 Encoder
+                <div className="medialive-panel-content space-y-4">
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Message Type</label>
+                    <Select defaultValue="splice_insert">
+                      <SelectTrigger className="medialive-select">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="splice_insert">Splice Insert</SelectItem>
+                        <SelectItem value="time_signal">Time Signal</SelectItem>
+                        <SelectItem value="splice_null">Splice Null</SelectItem>
+                        <SelectItem value="bandwidth_reservation">Bandwidth Reservation</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="medialive-form-row">
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Event ID</label>
+                      <input
+                        className="medialive-input"
+                        type="number"
+                        defaultValue="12345"
+                        placeholder="12345"
+                      />
+                    </div>
+                    <div className="medialive-form-group">
+                      <label className="medialive-form-label">Duration (ms)</label>
+                      <input
+                        className="medialive-input"
+                        type="number"
+                        defaultValue="30000"
+                        placeholder="30000"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Pre-roll Duration (ms)</label>
+                    <input
+                      className="medialive-input"
+                      type="number"
+                      defaultValue="0"
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Output Format</label>
+                    <Select defaultValue="hex">
+                      <SelectTrigger className="medialive-select">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="hex">Hexadecimal</SelectItem>
+                        <SelectItem value="base64">Base64</SelectItem>
+                        <SelectItem value="binary">Binary</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <button className="medialive-button medialive-button-primary w-full">
+                    <Radio className="w-4 h-4 mr-2" />
+                    Generate SCTE-35 Message
+                  </button>
+                </div>
+              </div>
+
+              {/* Generated SCTE-35 Data */}
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Database className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">Generated SCTE-35 Data</h2>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    Copy and use in injection points
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Hex Data</label>
+                    <textarea
+                      className="medialive-textarea"
+                      rows={4}
+                      placeholder="FC302500000000000000FFF01405000000017FEF00452F0001E02DCAFF000000000000A18A329B33"
+                      readOnly
+                    />
+                  </div>
+
+                  <div className="medialive-form-group">
+                    <label className="medialive-form-label">Base64 Data</label>
+                    <textarea
+                      className="medialive-textarea"
+                      rows={2}
+                      placeholder="8DA1JQAAAAAAAAAA//8EFAAAAAHf7wBF..."
+                      readOnly
+                    />
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <button className="medialive-button medialive-button-secondary flex-1">
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy Hex
+                    </button>
+                    <button className="medialive-button medialive-button-secondary flex-1">
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy Base64
+                    </button>
+                  </div>
+
+                  <button 
+                    className="medialive-button medialive-button-primary w-full"
+                    onClick={() => setActiveTab("injection")}
+                  >
+                    <Zap className="w-4 h-4 mr-2" />
+                    Use in Injection Points
+                  </button>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="advanced" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* FFmpeg Command Builder */}
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Settings className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">FFmpeg Command Builder</h2>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    Generate FFmpeg commands for stream processing
+                  </p>
+                </div>
+                <div className="medialive-panel-content">
+                  <FFmpegCommandBuilder />
+                </div>
+              </div>
+
+              {/* Advanced Tools */}
+              <div className="medialive-panel rounded-lg">
+                <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
+                  <div className="flex items-center space-x-2">
+                    <Shield className="w-5 h-5 text-[#ff9900]" />
+                    <h2 className="medialive-panel-title">Advanced Tools</h2>
+                  </div>
+                  <p className="medialive-panel-subtitle mt-1">
+                    Professional tools and utilities
+                  </p>
+                </div>
+                <div className="medialive-panel-content space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-[#1a252f] border border-[#232f3e] rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Database className="w-5 h-5 text-[#ff9900]" />
+                        <div>
+                          <span className="text-white font-medium">Data Converter</span>
+                          <p className="text-xs text-[#a0aec0]">Convert between formats</p>
+                        </div>
+                      </div>
+                      <Badge className="medialive-badge">Multi-format</Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-[#1a252f] border border-[#232f3e] rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Settings className="w-5 h-5 text-[#ff9900]" />
+                        <div>
+                          <span className="text-white font-medium">FFmpeg Builder</span>
+                          <p className="text-xs text-[#a0aec0]">Advanced command generation</p>
+                        </div>
+                      </div>
+                      <Badge className="medialive-badge">Advanced</Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-[#1a252f] border border-[#232f3e] rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Activity className="w-5 h-5 text-[#ff9900]" />
+                        <div>
+                          <span className="text-white font-medium">Stream Analyzer</span>
+                          <p className="text-xs text-[#a0aec0]">Detailed stream analysis</p>
+                        </div>
+                      </div>
+                      <Badge className="medialive-badge">Detailed</Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-[#1a252f] border border-[#232f3e] rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Network className="w-5 h-5 text-[#ff9900]" />
+                        <div>
+                          <span className="text-white font-medium">Protocol Tester</span>
+                          <p className="text-xs text-[#a0aec0]">Test SRT, HLS, RTMP</p>
+                        </div>
+                      </div>
+                      <Badge className="medialive-badge">Multi-protocol</Badge>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-[#232f3e]">
+                    <Link href="/scte35-tools">
+                      <Button className="medialive-button medialive-button-primary w-full">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Open Professional Tools
                   </Button>
                 </Link>
+                  </div>
+                </div>
               </div>
             </div>
           </TabsContent>

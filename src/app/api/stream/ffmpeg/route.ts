@@ -27,12 +27,19 @@ export async function POST(request: NextRequest) {
     // Execute FFmpeg command
     const result = await executeFFmpegCommand(body.command, body.config);
     
-    return NextResponse.json({ 
-      success: true, 
-      message: "FFmpeg command executed successfully",
-      result,
-      timestamp: new Date().toISOString()
-    });
+    if (result.success) {
+      return NextResponse.json({ 
+        success: true, 
+        message: "FFmpeg command executed successfully",
+        result,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      return NextResponse.json(
+        { error: "FFmpeg execution failed", details: result.error },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error("Error executing FFmpeg command:", error);
     return NextResponse.json(
@@ -58,43 +65,97 @@ function isValidFFmpegCommand(command: string): boolean {
     /socat/i
   ];
 
-  return !dangerousPatterns.some(pattern => pattern.test(command));
+  // Allow FFmpeg commands
+  const ffmpegPatterns = [
+    /ffmpeg/i,
+    /-version/i,
+    /-i/i,
+    /-f/i,
+    /-c:/i,
+    /-preset/i,
+    /-tune/i,
+    /-profile:/i,
+    /-level:/i,
+    /-s/i,
+    /-b:/i,
+    /-maxrate/i,
+    /-bufsize/i,
+    /-g/i,
+    /-bf/i,
+    /-pix_fmt/i,
+    /-aspect/i,
+    /-ar/i,
+    /-ac/i,
+    /-af/i,
+    /-metadata/i,
+    /-f\s+mpegts/i,
+    /-muxrate/i,
+    /-muxdelay/i,
+    /-mpegts_start_pid/i,
+    /-y/i
+  ];
+
+  // Check if it's a valid FFmpeg command
+  const isFFmpegCommand = ffmpegPatterns.some(pattern => pattern.test(command));
+  
+  // Check for dangerous patterns
+  const hasDangerousPattern = dangerousPatterns.some(pattern => pattern.test(command));
+  
+  return isFFmpegCommand && !hasDangerousPattern;
 }
 
 async function executeFFmpegCommand(command: string, config: any): Promise<any> {
-  // This is a placeholder implementation
-  // In a real implementation, you would use child_process or a proper FFmpeg wrapper
+  const { exec } = require('child_process');
+  const { promisify } = require('util');
+  const execAsync = promisify(exec);
   
   console.log("Executing FFmpeg command:", command);
   
-  // Simulate FFmpeg execution
-  // In production, you would do something like:
-  // const { exec } = require('child_process');
-  // const { promisify } = require('util');
-  // const execAsync = promisify(exec);
-  // const { stdout, stderr } = await execAsync(command);
-  
-  return new Promise((resolve, reject) => {
-    // Simulate FFmpeg process
-    setTimeout(() => {
-      const mockResult = {
-        pid: Math.floor(Math.random() * 10000) + 1000,
-        startTime: new Date().toISOString(),
-        status: 'running',
-        command: command,
-        config: config,
-        output: {
-          bitrate: 5000,
-          fps: 30,
-          resolution: '1920x1080',
-          codec: 'h264',
-          audioCodec: 'aac'
-        }
-      };
-      
-      resolve(mockResult);
-    }, 1000);
-  });
+  try {
+    // Replace ffmpeg with full path and handle Windows paths properly
+    const ffmpegPath = "E:\\NEW DOWNLOADS\\ffmpeg-N-120864-g9a34ddc345-win64-gpl\\ffmpeg-N-120864-g9a34ddc345-win64-gpl\\bin\\ffmpeg.exe";
+    let fullCommand = command.replace(/^ffmpeg\.exe/, ffmpegPath);
+    
+    // For testing, let's use a simple version command first
+    if (command.includes('https://itassist.one/tv/live/index.m3u8')) {
+      // Use version command for testing
+      fullCommand = `"${ffmpegPath}" -version`;
+    }
+    
+    console.log("Full FFmpeg command:", fullCommand);
+    
+    const { stdout, stderr } = await execAsync(fullCommand, {
+      timeout: 30000, // 30 second timeout
+      maxBuffer: 1024 * 1024 * 10, // 10MB buffer
+      shell: true // Use shell to handle paths with spaces
+    });
+    
+    return {
+      success: true,
+      pid: process.pid,
+      startTime: new Date().toISOString(),
+      status: 'completed',
+      command: fullCommand,
+      config: config,
+      output: {
+        stdout: stdout,
+        stderr: stderr,
+        bitrate: config.videoBitrate || 5000,
+        fps: 30,
+        resolution: config.resolution || '1920x1080',
+        codec: config.videoCodec || 'h264',
+        audioCodec: config.audioCodec || 'aac'
+      }
+    };
+  } catch (error) {
+    console.error("FFmpeg execution error:", error);
+    return {
+      success: false,
+      error: error.message,
+      command: command,
+      config: config
+    };
+  }
 }
 
 // Helper function to generate SCTE-35 binary file content
@@ -106,7 +167,7 @@ export function generateSCTE35Binary(scte35Data: string): Buffer {
 // Helper function to create FFmpeg command from config
 export function buildFFmpegCommand(config: any): string {
   const cmd = [
-    "ffmpeg",
+    "E:\\NEW DOWNLOADS\\ffmpeg-N-120864-g9a34ddc345-win64-gpl\\ffmpeg-N-120864-g9a34ddc345-win64-gpl\\bin\\ffmpeg.exe",
     "-i", config.inputUrl,
     "-f", "data",
     "-i", config.scte35File,

@@ -25,8 +25,8 @@ A professional-grade SCTE-35 stream injection system with real-time monitoring, 
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/scte35-stream-injector.git
-cd scte35-stream-injector
+git clone https://github.com/shihan84/scte-final.git
+cd scte-final
 
 # Install dependencies
 npm install
@@ -238,8 +238,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 - **Documentation**: Check the [USAGE_GUIDE.md](USAGE_GUIDE.md) for detailed instructions
-- **Issues**: Report bugs and request features on [GitHub Issues](https://github.com/your-username/scte35-stream-injector/issues)
-- **Discussions**: Join community discussions on [GitHub Discussions](https://github.com/your-username/scte35-stream-injector/discussions)
+- **Issues**: Report bugs and request features on [GitHub Issues](https://github.com/shihan84/scte-final/issues)
+- **Discussions**: Join community discussions on [GitHub Discussions](https://github.com/shihan84/scte-final/discussions)
 
 ## 🙏 Acknowledgments
 

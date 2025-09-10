@@ -146,7 +146,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/scte35-stream-injector.git"
+    "url": "https://github.com/shihan84/scte-final.git"
   },
   "keywords": [
     "scte35",
@@ -163,7 +163,7 @@
   "author": "SCTE-35 Stream Injector Team",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/your-username/scte35-stream-injector/issues"
+    "url": "https://github.com/shihan84/scte-final/issues"
   },
-  "homepage": "https://github.com/your-username/scte35-stream-injector#readme"
+  "homepage": "https://github.com/shihan84/scte-final#readme"
 }

@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Play, Pause, Square, Settings, Monitor, Copy, Download, ArrowLeft, Zap, Activity, Network, Database, Shield, Radio } from "lucide-react";
+import { Play, Pause, Square, Settings, Monitor, Copy, Download, ArrowLeft, Zap, Activity, Network, Database, Shield, RadioWave } from "lucide-react";
 import FFmpegCommandBuilder from "@/components/ffmpeg-command-builder";
 import TimeSyncClock from "@/components/time-sync-clock";
 
@@ -968,7 +968,7 @@ export default function StreamInjection() {
             <div className="medialive-panel rounded-lg">
               <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
                 <div className="flex items-center space-x-2">
-                    <Radio className="w-5 h-5 text-[#ff9900]" />
+                    <RadioWave className="w-5 h-5 text-[#ff9900]" />
                     <h2 className="medialive-panel-title">SCTE-35 Message Builder</h2>
                 </div>
                 <p className="medialive-panel-subtitle mt-1">

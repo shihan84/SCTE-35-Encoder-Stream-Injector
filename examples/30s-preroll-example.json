@@ -1,0 +1,67 @@
+{
+  "exampleName": "30-Second Pre-roll SCTE-35 Example",
+  "description": "Complete configuration for HLS input with SRT output and 30-second pre-roll ad",
+  "streamConfig": {
+    "streamName": "Live_Service_Preroll",
+    "streamType": "hls",
+    "inputUrl": "https://cdn.itassist.one/BREAKING/NEWS/index.m3u8",
+    "outputUrl": "srt://itassist.one:8888?streamid=#!::r=live/live,m=publish",
+    "prerollDuration": 30,
+    "bitrate": "5000k",
+    "resolution": "1920x1080",
+    "framerate": 30
+  },
+  "scte35Config": {
+    "cueType": "splice_insert",
+    "eventId": 12345,
+    "duration": 30,
+    "outOfNetwork": true,
+    "autoReturn": true,
+    "format": "base64",
+    "description": "30-second pre-roll advertisement"
+  },
+  "injectionPoints": [
+    {
+      "id": "preroll-1",
+      "timeOffset": 0,
+      "description": "30s Pre-roll Ad",
+      "scte35Data": "BASE64_DATA_WILL_BE_GENERATED",
+      "enabled": true
+    }
+  ],
+  "monitoring": {
+    "enableHealthChecks": true,
+    "enableSCTE35Detection": true,
+    "enablePerformanceMetrics": true,
+    "alertThresholds": {
+      "bitrateDrop": 0.8,
+      "errorRate": 0.05,
+      "latency": 5000
+    }
+  },
+  "ffmpegCommand": {
+    "template": "ffmpeg -i \"{inputUrl}\" -c:v copy -c:a copy -bsf:v \"scte35_inject=inject=base64:{scte35Data}\" -f srt \"{outputUrl}\"",
+    "description": "Generated FFmpeg command for this configuration"
+  },
+  "expectedResults": {
+    "streamHealth": "Healthy",
+    "scte35SuccessRate": ">95%",
+    "prerollDuration": "30 seconds",
+    "outputFormat": "SRT",
+    "monitoringActive": true
+  },
+  "troubleshooting": {
+    "commonIssues": [
+      "FFmpeg not found in PATH",
+      "Invalid SCTE-35 Base64 data",
+      "Network connectivity issues",
+      "Insufficient system resources"
+    ],
+    "solutions": [
+      "Install FFmpeg and add to PATH",
+      "Regenerate SCTE-35 data in Tools tab",
+      "Check input/output URLs",
+      "Monitor system resources in Advanced tab"
+    ]
+  }
+}

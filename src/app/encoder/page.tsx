@@ -222,8 +222,8 @@ export default function Encoder() {
                 className="medialive-input"
               />
               <div className="flex items-center space-x-1 mt-1">
-                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
-                <span className="text-xs text-[#a0aec0]">Default: 0xFC (SCTE-35)</span>
+                <HelpCircle className="w-3 h-3 text-white" />
+                <span className="text-xs text-white">Default: 0xFC (SCTE-35)</span>
               </div>
             </div>
             <div className="medialive-form-group">
@@ -235,8 +235,8 @@ export default function Encoder() {
                 className="medialive-input"
               />
               <div className="flex items-center space-x-1 mt-1">
-                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
-                <span className="text-xs text-[#a0aec0]">Default: 0</span>
+                <HelpCircle className="w-3 h-3 text-white" />
+                <span className="text-xs text-white">Default: 0</span>
               </div>
             </div>
             <div className="medialive-form-group">
@@ -248,8 +248,8 @@ export default function Encoder() {
                 className="medialive-input"
               />
               <div className="flex items-center space-x-1 mt-1">
-                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
-                <span className="text-xs text-[#a0aec0]">33-bit PTS adjustment</span>
+                <HelpCircle className="w-3 h-3 text-white" />
+                <span className="text-xs text-white">33-bit PTS adjustment</span>
               </div>
             </div>
             <div className="medialive-form-group">
@@ -261,8 +261,8 @@ export default function Encoder() {
                 className="medialive-input"
               />
               <div className="flex items-center space-x-1 mt-1">
-                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
-                <span className="text-xs text-[#a0aec0]">Default: 0xFF</span>
+                <HelpCircle className="w-3 h-3 text-white" />
+                <span className="text-xs text-white">Default: 0xFF</span>
               </div>
             </div>
           </div>
@@ -282,8 +282,8 @@ export default function Encoder() {
                   className="medialive-input"
                 />
                 <div className="flex items-center space-x-1 mt-1">
-                  <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
-                  <span className="text-xs text-[#a0aec0]">Unique event identifier</span>
+                  <HelpCircle className="w-3 h-3 text-white" />
+                  <span className="text-xs text-white">Unique event identifier</span>
                 </div>
               </div>
               <div className="medialive-form-group">
@@ -368,8 +368,8 @@ export default function Encoder() {
                 className="medialive-input"
               />
               <div className="flex items-center space-x-1 mt-1">
-                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
-                <span className="text-xs text-[#a0aec0]">33-bit presentation timestamp</span>
+                <HelpCircle className="w-3 h-3 text-white" />
+                <span className="text-xs text-white">33-bit presentation timestamp</span>
               </div>
             </div>
             <div className="medialive-form-group">
@@ -401,8 +401,8 @@ export default function Encoder() {
                 className="medialive-input"
               />
               <div className="flex items-center space-x-1 mt-1">
-                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
-                <span className="text-xs text-[#a0aec0]">Duration in 90kHz ticks</span>
+                <HelpCircle className="w-3 h-3 text-white" />
+                <span className="text-xs text-white">Duration in 90kHz ticks</span>
               </div>
             </div>
             <div className="medialive-form-group">
@@ -436,8 +436,8 @@ export default function Encoder() {
                 className="medialive-input"
               />
               <div className="flex items-center space-x-1 mt-1">
-                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
-                <span className="text-xs text-[#a0aec0]">Program identifier</span>
+                <HelpCircle className="w-3 h-3 text-white" />
+                <span className="text-xs text-white">Program identifier</span>
               </div>
             </div>
             <div className="medialive-form-group">
@@ -449,8 +449,8 @@ export default function Encoder() {
                 className="medialive-input"
               />
               <div className="flex items-center space-x-1 mt-1">
-                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
-                <span className="text-xs text-[#a0aec0]">Available events</span>
+                <HelpCircle className="w-3 h-3 text-white" />
+                <span className="text-xs text-white">Available events</span>
               </div>
             </div>
             <div className="medialive-form-group">
@@ -462,8 +462,8 @@ export default function Encoder() {
                 className="medialive-input"
               />
               <div className="flex items-center space-x-1 mt-1">
-                <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
-                <span className="text-xs text-[#a0aec0]">Expected events</span>
+                <HelpCircle className="w-3 h-3 text-white" />
+                <span className="text-xs text-white">Expected events</span>
               </div>
             </div>
           </div>
@@ -530,7 +530,7 @@ export default function Encoder() {
                 <p className="medialive-panel-subtitle text-xs">{section.description}</p>
               </div>
             </div>
-            <div className="text-[#a0aec0]">
+            <div className="text-white">
               {chevronIcon}
             </div>
           </div>
@@ -563,14 +563,14 @@ export default function Encoder() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-white">SCTE-35 Encoder</h1>
-                  <p className="text-sm text-[#a0aec0]">AWS Elemental MediaLive Compatible</p>
+                  <p className="text-sm text-white">AWS Elemental MediaLive Compatible</p>
                 </div>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <div className="medialive-status-indicator medialive-status-running"></div>
-                <span className="text-sm text-[#a0aec0]">System Active</span>
+                <span className="text-sm text-white">System Active</span>
               </div>
               <Badge className="medialive-badge medialive-badge-success">PRODUCTION READY</Badge>
             </div>
@@ -645,8 +645,8 @@ export default function Encoder() {
                           className="medialive-input"
                         />
                         <div className="flex items-center space-x-1 mt-1">
-                          <HelpCircle className="w-3 h-3 text-[#a0aec0]" />
-                          <span className="text-xs text-[#a0aec0]">33-bit presentation timestamp</span>
+                          <HelpCircle className="w-3 h-3 text-white" />
+                          <span className="text-xs text-white">33-bit presentation timestamp</span>
                         </div>
                       </div>
                       <div className="medialive-form-group">
@@ -733,7 +733,7 @@ export default function Encoder() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <div className="medialive-status-indicator medialive-status-running"></div>
-                    <span className="text-sm text-[#a0aec0]">Ready</span>
+                    <span className="text-sm text-white">Ready</span>
                   </div>
                   <div className="flex space-x-2">
                     <button

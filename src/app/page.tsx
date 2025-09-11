@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RadioWave, Settings, Zap, Activity, Shield, Database, Network, Monitor, ArrowRight, CheckCircle } from "lucide-react";
+import { Radio, Settings, Zap, Activity, Shield, Database, Network, Monitor, ArrowRight, CheckCircle, BookOpen } from "lucide-react";
 
 export default function Home() {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
@@ -55,7 +55,7 @@ export default function Home() {
       id: 'encoder',
       title: 'Legacy Encoder',
       description: 'Standalone SCTE-35 encoder for advanced users',
-      icon: RadioWave,
+      icon: Radio,
       href: '/encoder',
       features: [
         { label: 'Splice Insert', badge: 'Supported' },
@@ -63,6 +63,19 @@ export default function Home() {
         { label: 'Multiple Formats', badge: 'Base64/Hex' }
       ],
       color: 'from-purple-500 to-pink-500'
+    },
+    {
+      id: 'advanced-dashboard',
+      title: 'Advanced Dashboard',
+      description: 'Enterprise-grade monitoring with AI intelligence and predictive analytics.',
+      icon: Activity,
+      href: '/advanced-dashboard',
+      features: [
+        { label: 'AI Intelligence', badge: 'Active' },
+        { label: 'Predictive Analytics', badge: 'ML-Powered' },
+        { label: 'Enterprise Security', badge: 'Compliant' }
+      ],
+      color: 'from-indigo-500 to-purple-500'
     }
   ], []);
 
@@ -87,7 +100,7 @@ export default function Home() {
       color: 'from-green-500 to-emerald-500'
     },
     {
-      icon: RadioWave,
+      icon: Radio,
       title: 'Multi-Protocol',
       description: 'Support for SRT, HLS, DASH, and RTMP',
       color: 'from-purple-500 to-pink-500'
@@ -121,14 +134,19 @@ export default function Home() {
                 </div>
                 <div>
                   <h1 className="text-4xl font-bold text-white">SCTE-35 Encoder & Stream Injector</h1>
-                  <p className="text-lg text-[#a0aec0] mt-1">AWS Elemental MediaLive Compatible</p>
+                  <p className="text-lg text-white mt-1">AWS Elemental MediaLive Compatible</p>
                 </div>
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <Link href="/documentation">
+                <Button variant="secondary" className="medialive-button medialive-button-secondary">
+                  <BookOpen className="w-4 h-4 mr-2" /> Documentation
+                </Button>
+              </Link>
               <div className="flex items-center space-x-2">
                 <div className="medialive-status-indicator medialive-status-running" aria-label="System Status: Active"></div>
-                <span className="text-sm text-[#a0aec0]">System Active</span>
+                <span className="text-sm text-white">System Active</span>
               </div>
               <Badge className="medialive-badge medialive-badge-success" role="status" aria-label="Production Ready">PRODUCTION READY</Badge>
             </div>
@@ -141,7 +159,7 @@ export default function Home() {
         {/* Hero Section */}
         <section className="text-center space-y-6 mb-12" aria-labelledby="hero-title">
           <h2 id="hero-title" className="text-3xl font-bold text-white">Professional SCTE-35 Solution</h2>
-          <p className="text-xl text-[#a0aec0] max-w-3xl mx-auto">
+          <p className="text-xl text-white max-w-3xl mx-auto">
             Enterprise-grade SCTE-35 encoding and real-time stream injection for digital video broadcasting, 
             fully compatible with AWS Elemental MediaLive workflows
           </p>
@@ -173,7 +191,7 @@ export default function Home() {
                     <div className="space-y-2 flex-1">
                       {card.features.map((feature, idx) => (
                         <div key={idx} className="flex items-center justify-between">
-                          <span className="text-xs text-[#a0aec0]">{feature.label}</span>
+                          <span className="text-xs text-white">{feature.label}</span>
                           <Badge className="medialive-badge text-xs px-2 py-1">{feature.badge}</Badge>
                   </div>
                       ))}
@@ -208,7 +226,7 @@ export default function Home() {
                         <IconComponent className="w-8 h-8 text-white" aria-hidden="true" />
                 </div>
                       <h3 className="font-semibold text-white group-hover:text-[#ff9900] transition-colors duration-300">{feature.title}</h3>
-                      <p className="text-sm text-[#a0aec0] group-hover:text-white transition-colors duration-300">
+                      <p className="text-sm text-white group-hover:text-[#ff9900] transition-colors duration-300">
                         {feature.description}
                 </p>
               </div>
@@ -238,7 +256,7 @@ export default function Home() {
                 <div className="flex items-center space-x-3">
                       <div className={`medialive-status-indicator ${status.healthy ? 'medialive-status-running' : 'medialive-status-error'} group-hover:scale-110 transition-transform duration-300`} aria-label={`${status.service} status: ${status.status}`}></div>
                   <div>
-                        <span className="text-sm text-[#a0aec0] group-hover:text-white transition-colors duration-300">{status.service}</span>
+                        <span className="text-sm text-white group-hover:text-[#ff9900] transition-colors duration-300">{status.service}</span>
                         <div className="text-white font-medium group-hover:text-[#ff9900] transition-colors duration-300 flex items-center gap-2">
                           {status.status}
                           {status.healthy && <CheckCircle className="w-4 h-4 text-green-400" aria-hidden="true" />}

@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Play, Pause, Square, Settings, Monitor, Copy, Download, ArrowLeft, Zap, Activity, Network, Database, Shield, RadioWave } from "lucide-react";
+import { Play, Pause, Square, Settings, Monitor, Copy, Download, ArrowLeft, Zap, Activity, Network, Database, Shield, Radio } from "lucide-react";
 import FFmpegCommandBuilder from "@/components/ffmpeg-command-builder";
 import TimeSyncClock from "@/components/time-sync-clock";
 
@@ -70,6 +70,7 @@ interface StreamStatus {
 
 export default function StreamInjection() {
   const [activeTab, setActiveTab] = useState("config");
+  
   const [streamConfig, setStreamConfig] = useState<StreamConfig>({
     inputUrl: "https://cdn.itassist.one/BREAKING/NEWS/index.m3u8",
     outputUrl: "srt://itassist.one:8888?streamid=#!::r=live/live,m=publish",
@@ -303,14 +304,14 @@ export default function StreamInjection() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-white">SCTE-35 Stream Injection</h1>
-                  <p className="text-sm text-[#a0aec0]">AWS Elemental MediaLive Compatible</p>
+                  <p className="text-sm text-white">AWS Elemental MediaLive Compatible</p>
                 </div>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <div className={`medialive-status-indicator ${getStatusColor(streamStatus.status)}`}></div>
-                <span className="text-sm text-[#a0aec0]">{getStatusText(streamStatus.status)}</span>
+                <span className="text-sm text-white">{getStatusText(streamStatus.status)}</span>
               </div>
               <Badge className="medialive-badge medialive-badge-success">PRODUCTION READY</Badge>
             </div>
@@ -331,8 +332,9 @@ export default function StreamInjection() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto p-6">
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="medialive-tabs w-full">
-          <TabsList className="grid w-full grid-cols-5 bg-[#16191f] border border-[#232f3e] rounded-lg p-5 gap-[80px]">
+          <TabsList className="grid w-full grid-cols-5 bg-[#16191f] border border-[#232f3e] rounded-lg p-2 gap-2">
             <TabsTrigger 
               value="config" 
               className="medialive-tab data-[state=active]:bg-[#ff9900] data-[state=active]:text-[#0f1419] data-[state=active]:font-semibold px-3 py-2 text-xs"
@@ -734,7 +736,7 @@ export default function StreamInjection() {
                   {/* Injection Points List */}
                   <div className="space-y-2 max-h-64 overflow-y-auto medialive-scrollbar">
                     {injectionPoints.length === 0 ? (
-                      <div className="text-center text-[#a0aec0] py-4">
+                      <div className="text-center text-white py-4">
                         No injection points configured
                       </div>
                     ) : (
@@ -750,7 +752,7 @@ export default function StreamInjection() {
                                 <Badge className="medialive-badge">{formatTime(injection.time)}</Badge>
                               </div>
                             </div>
-                            <div className="text-xs text-[#a0aec0] mt-1 font-mono">
+                            <div className="text-xs text-white mt-1 font-mono">
                               {injection.scte35Data.substring(0, 50)}...
                             </div>
                           </div>
@@ -826,7 +828,7 @@ export default function StreamInjection() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-white font-medium">Enable Auto Injection</span>
-                      <p className="text-sm text-[#a0aec0] mt-1">
+                      <p className="text-sm text-white mt-1">
                         Automatically inject SCTE-35 cues at scheduled times
                       </p>
                     </div>
@@ -888,24 +890,24 @@ export default function StreamInjection() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-white">{streamStatus.inputBitrate}</div>
-                        <div className="text-sm text-[#a0aec0]">Input Bitrate (kbps)</div>
+                        <div className="text-sm text-white">Input Bitrate (kbps)</div>
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-white">{streamStatus.outputBitrate}</div>
-                        <div className="text-sm text-[#a0aec0]">Output Bitrate (kbps)</div>
+                        <div className="text-sm text-white">Output Bitrate (kbps)</div>
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-white">{streamStatus.viewers}</div>
-                        <div className="text-sm text-[#a0aec0]">Viewers</div>
+                        <div className="text-sm text-white">Viewers</div>
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-white">{formatTime(streamStatus.uptime)}</div>
-                        <div className="text-sm text-[#a0aec0]">Uptime</div>
+                        <div className="text-sm text-white">Uptime</div>
                       </div>
                     </div>
                     {streamStatus.lastInjection && (
                       <div className="text-center">
-                        <div className="text-sm text-[#a0aec0]">Last Injection</div>
+                        <div className="text-sm text-white">Last Injection</div>
                         <div className="text-white">{new Date(streamStatus.lastInjection).toLocaleString()}</div>
                       </div>
                     )}
@@ -934,28 +936,28 @@ export default function StreamInjection() {
                       <Network className="w-8 h-8 text-[#ff9900]" />
                     </div>
                     <div className="text-2xl font-bold text-white">{streamStatus.inputBitrate}</div>
-                    <div className="text-sm text-[#a0aec0]">Input Bitrate (kbps)</div>
+                    <div className="text-sm text-white">Input Bitrate (kbps)</div>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-[#232f3e] to-[#1a252f] rounded-lg flex items-center justify-center mx-auto mb-4">
                       <Zap className="w-8 h-8 text-[#ff9900]" />
                     </div>
                     <div className="text-2xl font-bold text-white">{streamStatus.outputBitrate}</div>
-                    <div className="text-sm text-[#a0aec0]">Output Bitrate (kbps)</div>
+                    <div className="text-sm text-white">Output Bitrate (kbps)</div>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-[#232f3e] to-[#1a252f] rounded-lg flex items-center justify-center mx-auto mb-4">
                       <Activity className="w-8 h-8 text-[#ff9900]" />
                     </div>
                     <div className="text-2xl font-bold text-white">{streamStatus.viewers}</div>
-                    <div className="text-sm text-[#a0aec0]">Viewers</div>
+                    <div className="text-sm text-white">Viewers</div>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-[#232f3e] to-[#1a252f] rounded-lg flex items-center justify-center mx-auto mb-4">
                       <Shield className="w-8 h-8 text-[#ff9900]" />
                     </div>
                     <div className="text-2xl font-bold text-white">{formatTime(streamStatus.uptime)}</div>
-                    <div className="text-sm text-[#a0aec0]">Uptime</div>
+                    <div className="text-sm text-white">Uptime</div>
                   </div>
                 </div>
               </div>
@@ -968,7 +970,7 @@ export default function StreamInjection() {
             <div className="medialive-panel rounded-lg">
               <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
                 <div className="flex items-center space-x-2">
-                    <RadioWave className="w-5 h-5 text-[#ff9900]" />
+                    <Radio className="w-5 h-5 text-[#ff9900]" />
                     <h2 className="medialive-panel-title">SCTE-35 Message Builder</h2>
                 </div>
                 <p className="medialive-panel-subtitle mt-1">
@@ -1134,7 +1136,7 @@ export default function StreamInjection() {
                         <Database className="w-5 h-5 text-[#ff9900]" />
                         <div>
                           <span className="text-white font-medium">Data Converter</span>
-                          <p className="text-xs text-[#a0aec0]">Convert between formats</p>
+                          <p className="text-xs text-white">Convert between formats</p>
                         </div>
                       </div>
                       <Badge className="medialive-badge">Multi-format</Badge>
@@ -1145,7 +1147,7 @@ export default function StreamInjection() {
                         <Settings className="w-5 h-5 text-[#ff9900]" />
                         <div>
                           <span className="text-white font-medium">FFmpeg Builder</span>
-                          <p className="text-xs text-[#a0aec0]">Advanced command generation</p>
+                          <p className="text-xs text-white">Advanced command generation</p>
                         </div>
                       </div>
                       <Badge className="medialive-badge">Advanced</Badge>
@@ -1156,7 +1158,7 @@ export default function StreamInjection() {
                         <Activity className="w-5 h-5 text-[#ff9900]" />
                         <div>
                           <span className="text-white font-medium">Stream Analyzer</span>
-                          <p className="text-xs text-[#a0aec0]">Detailed stream analysis</p>
+                          <p className="text-xs text-white">Detailed stream analysis</p>
                         </div>
                       </div>
                       <Badge className="medialive-badge">Detailed</Badge>
@@ -1167,7 +1169,7 @@ export default function StreamInjection() {
                         <Network className="w-5 h-5 text-[#ff9900]" />
                         <div>
                           <span className="text-white font-medium">Protocol Tester</span>
-                          <p className="text-xs text-[#a0aec0]">Test SRT, HLS, RTMP</p>
+                          <p className="text-xs text-white">Test SRT, HLS, RTMP</p>
                         </div>
                       </div>
                       <Badge className="medialive-badge">Multi-protocol</Badge>

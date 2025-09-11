@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Radio, Settings, Zap, Activity, Shield, Database, Network, Monitor, ArrowRight, CheckCircle } from "lucide-react";
+import { RadioWave, Settings, Zap, Activity, Shield, Database, Network, Monitor, ArrowRight, CheckCircle } from "lucide-react";
 
 export default function Home() {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
@@ -55,7 +55,7 @@ export default function Home() {
       id: 'encoder',
       title: 'Legacy Encoder',
       description: 'Standalone SCTE-35 encoder for advanced users',
-      icon: Radio,
+      icon: RadioWave,
       href: '/encoder',
       features: [
         { label: 'Splice Insert', badge: 'Supported' },
@@ -87,7 +87,7 @@ export default function Home() {
       color: 'from-green-500 to-emerald-500'
     },
     {
-      icon: Radio,
+      icon: RadioWave,
       title: 'Multi-Protocol',
       description: 'Support for SRT, HLS, DASH, and RTMP',
       color: 'from-purple-500 to-pink-500'

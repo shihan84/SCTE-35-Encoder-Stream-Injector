@@ -115,7 +115,7 @@ export default function Encoder() {
   // Splice Info Section
   const [spliceInfo, setSpliceInfo] = useState<SpliceInfoSection>({
     tableId: 0xfc,
-    selectionSyntaxIndicator: false,
+    selectionSyntaxIndicator: true,
     privateIndicator: false,
     protocolVersion: 0,
     encryptedPacket: false,
@@ -129,18 +129,18 @@ export default function Encoder() {
 
   // Splice Insert
   const [spliceInsert, setSpliceInsert] = useState<SpliceInsert>({
-    spliceEventId: 1,
+    spliceEventId: 12345,
     spliceEventCancelIndicator: false,
-    outOfNetworkIndicator: false,
+    outOfNetworkIndicator: true,
     programSpliceFlag: true,
-    durationFlag: false,
+    durationFlag: true,
     spliceImmediateFlag: false,
-    breakDurationAutoReturn: false,
-    breakDuration: 0,
+    breakDurationAutoReturn: true,
+    breakDuration: 2700000, // 30 seconds in 90kHz ticks
     uniqueProgramId: 1,
     available: 0,
     expected: 0,
-    spliceTimeSpecified: true,
+    spliceTimeSpecified: false,
     spliceTimePts: 0
   });
 
@@ -167,6 +167,8 @@ export default function Encoder() {
         commandType: activeTab
       };
 
+      console.log("Sending payload:", payload);
+
       const response = await fetch("/api/scte35/encode", {
         method: "POST",
         headers: {
@@ -175,15 +177,20 @@ export default function Encoder() {
         body: JSON.stringify(payload),
       });
 
+      console.log("Response status:", response.status);
+
       if (!response.ok) {
-        throw new Error("Encoding failed");
+        const errorText = await response.text();
+        console.error("Response error:", errorText);
+        throw new Error(`Encoding failed: ${response.status} ${errorText}`);
       }
 
       const result = await response.json();
+      console.log("Response result:", result);
       setEncodedOutput(result[outputFormat]);
     } catch (error) {
       console.error("Error encoding SCTE-35:", error);
-      setEncodedOutput("Error encoding SCTE-35 data");
+      setEncodedOutput(`Error encoding SCTE-35 data: ${error.message}`);
     } finally {
       setIsEncoding(false);
     }

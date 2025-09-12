@@ -273,7 +273,7 @@ export default function FFmpegCommandBuilder() {
 
         {activeTab === "basic" && (
           <div className="space-y-4 mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="medialive-panel rounded-lg">
                 <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
                   <h3 className="medialive-panel-title text-lg">Input/Output</h3>
@@ -282,33 +282,33 @@ export default function FFmpegCommandBuilder() {
                   <div className="medialive-form-group">
                     <label htmlFor="inputUrl" className="medialive-form-label">Input URL</label>
                     <input
-                      id="inputUrl"
+                    id="inputUrl"
                       className="medialive-input"
-                      value={config.inputUrl}
-                      onChange={(e) => setConfig(prev => ({ ...prev, inputUrl: e.target.value }))}
-                      placeholder="https://example.com/live/stream.m3u8"
-                    />
-                  </div>
+                    value={config.inputUrl}
+                    onChange={(e) => setConfig(prev => ({ ...prev, inputUrl: e.target.value }))}
+                    placeholder="https://example.com/live/stream.m3u8"
+                  />
+                </div>
                   <div className="medialive-form-group">
                     <label htmlFor="scte35File" className="medialive-form-label">SCTE-35 File</label>
                     <input
-                      id="scte35File"
+                    id="scte35File"
                       className="medialive-input"
-                      value={config.scte35File}
-                      onChange={(e) => setConfig(prev => ({ ...prev, scte35File: e.target.value }))}
-                      placeholder="scte35_cue.bin"
-                    />
-                  </div>
+                    value={config.scte35File}
+                    onChange={(e) => setConfig(prev => ({ ...prev, scte35File: e.target.value }))}
+                    placeholder="scte35_cue.bin"
+                  />
+                </div>
                   <div className="medialive-form-group">
                     <label htmlFor="outputUrl" className="medialive-form-label">Output URL</label>
                     <input
-                      id="outputUrl"
+                    id="outputUrl"
                       className="medialive-input"
-                      value={config.outputUrl}
-                      onChange={(e) => setConfig(prev => ({ ...prev, outputUrl: e.target.value }))}
-                      placeholder="srt://localhost:8888?streamid=live"
-                    />
-                  </div>
+                    value={config.outputUrl}
+                    onChange={(e) => setConfig(prev => ({ ...prev, outputUrl: e.target.value }))}
+                    placeholder="srt://localhost:8888?streamid=live"
+                  />
+                </div>
                 </div>
               </div>
 
@@ -331,7 +331,7 @@ export default function FFmpegCommandBuilder() {
                         <option value="libvpx">VP8</option>
                         <option value="libvpx-vp9">VP9</option>
                       </select>
-                    </div>
+                  </div>
                     <div className="medialive-form-group">
                       <label htmlFor="videoPreset" className="medialive-form-label">Preset</label>
                       <select
@@ -350,8 +350,8 @@ export default function FFmpegCommandBuilder() {
                         <option value="slower">Slower</option>
                         <option value="veryslow">Veryslow</option>
                       </select>
-                    </div>
                   </div>
+                </div>
                   <div className="medialive-form-row">
                     <div className="medialive-form-group">
                       <label htmlFor="resolution" className="medialive-form-label">Resolution</label>
@@ -362,18 +362,18 @@ export default function FFmpegCommandBuilder() {
                         onChange={(e) => setConfig(prev => ({ ...prev, resolution: e.target.value }))}
                         placeholder="1920x1080"
                       />
-                    </div>
+                  </div>
                     <div className="medialive-form-group">
                       <label htmlFor="videoBitrate" className="medialive-form-label">Bitrate</label>
                       <input
-                        id="videoBitrate"
+                      id="videoBitrate"
                         className="medialive-input"
-                        value={config.videoBitrate}
-                        onChange={(e) => setConfig(prev => ({ ...prev, videoBitrate: e.target.value }))}
+                      value={config.videoBitrate}
+                      onChange={(e) => setConfig(prev => ({ ...prev, videoBitrate: e.target.value }))}
                         placeholder="5000k"
-                      />
-                    </div>
+                    />
                   </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -382,7 +382,7 @@ export default function FFmpegCommandBuilder() {
 
         {activeTab === "advanced" && (
           <div className="space-y-4 mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="medialive-panel rounded-lg">
                 <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
                   <h3 className="medialive-panel-title text-lg">Audio Settings</h3>
@@ -402,20 +402,20 @@ export default function FFmpegCommandBuilder() {
                         <option value="ac3">AC-3</option>
                         <option value="eac3">E-AC-3</option>
                       </select>
-                    </div>
+                  </div>
                     <div className="medialive-form-group">
                       <label htmlFor="audioBitrate" className="medialive-form-label">Bitrate</label>
                       <input
-                        id="audioBitrate"
+                      id="audioBitrate"
                         className="medialive-input"
-                        value={config.audioBitrate}
-                        onChange={(e) => setConfig(prev => ({ ...prev, audioBitrate: e.target.value }))}
+                      value={config.audioBitrate}
+                      onChange={(e) => setConfig(prev => ({ ...prev, audioBitrate: e.target.value }))}
                         placeholder="128k"
-                      />
-                    </div>
+                    />
                   </div>
                 </div>
-              </div>
+                  </div>
+                </div>
 
               <div className="medialive-panel rounded-lg">
                 <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
@@ -426,13 +426,13 @@ export default function FFmpegCommandBuilder() {
                     <div className="medialive-form-group">
                       <label htmlFor="muxrate" className="medialive-form-label">Muxrate</label>
                       <input
-                        id="muxrate"
+                      id="muxrate"
                         className="medialive-input"
-                        value={config.muxrate}
-                        onChange={(e) => setConfig(prev => ({ ...prev, muxrate: e.target.value }))}
+                      value={config.muxrate}
+                      onChange={(e) => setConfig(prev => ({ ...prev, muxrate: e.target.value }))}
                         placeholder="10000000"
-                      />
-                    </div>
+                    />
+                  </div>
                     <div className="medialive-form-group">
                       <label htmlFor="scte35Pid" className="medialive-form-label">SCTE-35 PID</label>
                       <input
@@ -441,12 +441,12 @@ export default function FFmpegCommandBuilder() {
                         value={config.scte35Pid}
                         onChange={(e) => setConfig(prev => ({ ...prev, scte35Pid: e.target.value }))}
                         placeholder="0x103"
-                      />
-                    </div>
+                    />
                   </div>
                 </div>
-              </div>
-            </div>
+                  </div>
+                  </div>
+                </div>
           </div>
         )}
 
@@ -455,7 +455,7 @@ export default function FFmpegCommandBuilder() {
             <div className="medialive-panel rounded-lg">
               <div className="medialive-panel-header px-6 py-4 rounded-t-lg">
                 <h3 className="medialive-panel-title text-lg">SCTE-35 Metadata</h3>
-              </div>
+                </div>
               <div className="medialive-panel-content space-y-4">
                 <div className="medialive-form-row">
                   <div className="medialive-form-group">
@@ -464,51 +464,51 @@ export default function FFmpegCommandBuilder() {
                       id="program_id"
                       className="medialive-input"
                       value={config.metadata.program_id}
-                      onChange={(e) => setConfig(prev => ({ 
-                        ...prev, 
+                    onChange={(e) => setConfig(prev => ({ 
+                      ...prev, 
                         metadata: { ...prev.metadata, program_id: e.target.value }
-                      }))}
-                    />
-                  </div>
+                    }))}
+                  />
+                </div>
                   <div className="medialive-form-group">
                     <label htmlFor="provider" className="medialive-form-label">Provider</label>
                     <input
                       id="provider"
                       className="medialive-input"
                       value={config.metadata.provider}
-                      onChange={(e) => setConfig(prev => ({ 
-                        ...prev, 
+                    onChange={(e) => setConfig(prev => ({ 
+                      ...prev, 
                         metadata: { ...prev.metadata, provider: e.target.value }
-                      }))}
-                    />
-                  </div>
+                    }))}
+                  />
                 </div>
+              </div>
                 <div className="medialive-form-row">
                   <div className="medialive-form-group">
                     <label htmlFor="title" className="medialive-form-label">Title</label>
                     <input
-                      id="title"
+                    id="title"
                       className="medialive-input"
-                      value={config.metadata.title}
-                      onChange={(e) => setConfig(prev => ({ 
-                        ...prev, 
-                        metadata: { ...prev.metadata, title: e.target.value }
-                      }))}
-                    />
-                  </div>
+                    value={config.metadata.title}
+                    onChange={(e) => setConfig(prev => ({ 
+                      ...prev, 
+                      metadata: { ...prev.metadata, title: e.target.value }
+                    }))}
+                  />
+                </div>
                   <div className="medialive-form-group">
                     <label htmlFor="stream_id" className="medialive-form-label">Stream ID</label>
                     <input
                       id="stream_id"
                       className="medialive-input"
                       value={config.metadata.stream_id}
-                      onChange={(e) => setConfig(prev => ({ 
-                        ...prev, 
+                    onChange={(e) => setConfig(prev => ({ 
+                      ...prev, 
                         metadata: { ...prev.metadata, stream_id: e.target.value }
-                      }))}
-                    />
-                  </div>
+                    }))}
+                  />
                 </div>
+              </div>
               </div>
             </div>
           </div>

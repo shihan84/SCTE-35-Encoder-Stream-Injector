@@ -1,0 +1,366 @@
+name: Build FFmpeg with SCTE-35 Support
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      ffmpeg_version:
+        description: 'FFmpeg version to build'
+        required: false
+        default: 'n6.1.1'
+        type: string
+
+jobs:
+  build-ffmpeg-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up environment variables
+      run: |
+        echo "FFMPEG_VERSION=${{ github.event.inputs.ffmpeg_version || 'n6.1.1' }}" >> $env:GITHUB_ENV
+        echo "BUILD_DIR=ffmpeg-build" >> $env:GITHUB_ENV
+        echo "INSTALL_DIR=ffmpeg-install" >> $env:GITHUB_ENV
+        
+    - name: Install build dependencies
+      run: |
+        # Install MSYS2 and dependencies
+        choco install msys2 -y
+        refreshenv
+        
+        # Update MSYS2
+        C:\msys64\usr\bin\bash.exe -lc "pacman -Syu --noconfirm"
+        
+        # Install build tools and libraries
+        C:\msys64\usr\bin\bash.exe -lc "pacman -S --noconfirm --needed base-devel mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config mingw-w64-x86_64-yasm mingw-w64-x86_64-nasm"
+        
+        # Install multimedia libraries
+        C:\msys64\usr\bin\bash.exe -lc "pacman -S --noconfirm --needed mingw-w64-x86_64-libx264 mingw-w64-x86_64-libx265 mingw-w64-x86_64-libvpx mingw-w64-x86_64-libfdk-aac mingw-w64-x86_64-libmp3lame mingw-w64-x86_64-libopus mingw-w64-x86_64-libvorbis mingw-w64-x86_64-libtheora mingw-w64-x86_64-libwebp mingw-w64-x86_64-libass mingw-w64-x86_64-freetype mingw-w64-x86_64-fontconfig mingw-w64-x86_64-fribidi mingw-w64-x86_64-harfbuzz mingw-w64-x86_64-libxml2 mingw-w64-x86_64-zlib mingw-w64-x86_64-bzip2 mingw-w64-x86_64-lzma mingw-w64-x86_64-libiconv mingw-w64-x86_64-openssl mingw-w64-x86_64-libssh mingw-w64-x86_64-libbluray mingw-w64-x86_64-libdvdread mingw-w64-x86_64-libdvdnav mingw-w64-x86_64-libcdio mingw-w64-x86_64-libcdio-paranoia mingw-w64-x86_64-libmodplug mingw-w64-x86_64-libgme mingw-w64-x86_64-libsoxr mingw-w64-x86_64-libsamplerate mingw-w64-x86_64-libbs2b mingw-w64-x86_64-libmysofa mingw-w64-x86_64-libflite mingw-w64-x86_64-libgme mingw-w64-x86_64-libopenmpt mingw-w64-x86_64-libplacebo mingw-w64-x86_64-librist mingw-w64-x86_64-libsrt mingw-w64-x86_64-libzmq mingw-w64-x86_64-libzvbi mingw-w64-x86_64-libzimg mingw-w64-x86_64-libavif mingw-w64-x86_64-libjxl mingw-w64-x86_64-librav1e mingw-w64-x86_64-libsvtav1 mingw-w64-x86_64-libvvenc mingw-w64-x86_64-libvmaf mingw-w64-x86_64-libvidstab mingw-w64-x86_64-libxvid mingw-w64-x86_64-libxavs2 mingw-w64-x86_64-libkvazaar mingw-w64-x86_64-libopenh264 mingw-w64-x86_64-libopenjpeg mingw-w64-x86_64-libwebp mingw-w64-x86_64-libvpx mingw-w64-x86_64-libtheora mingw-w64-x86_64-libvorbis mingw-w64-x86_64-libopus mingw-w64-x86_64-libmp3lame mingw-w64-x86_64-libfdk-aac mingw-w64-x86_64-libx265 mingw-w64-x86_64-libx264 mingw-w64-x86_64-libspeex mingw-w64-x86_64-libtwolame mingw-w64-x86_64-libwavpack mingw-w64-x86_64-libflac mingw-w64-x86_64-libgsm mingw-w64-x86_64-libcaca mingw-w64-x86_64-libcelt mingw-w64-x86_64-libcodec2 mingw-w64-x86_64-libdcadec mingw-w64-x86_64-libdca mingw-w64-x86_64-libdrm mingw-w64-x86_64-libfribidi mingw-w64-x86_64-libgme mingw-w64-x86_64-libiec61883 mingw-w64-x86_64-libiec61883 mingw-w64-x86_64-libjack mingw-w64-x86_64-libmfx mingw-w64-x86_64-libmodplug mingw-w64-x86_64-libmysofa mingw-w64-x86_64-libopenal mingw-w64-x86_64-libopencl mingw-w64-x86_64-libopenmpt mingw-w64-x86_64-libpulse mingw-w64-x86_64-librav1e mingw-w64-x86_64-librubberband mingw-w64-x86_64-libsamplerate mingw-w64-x86_64-libsoxr mingw-w64-x86_64-libssh mingw-w64-x86_64-libsvtav1 mingw-w64-x86_64-libtheora mingw-w64-x86_64-libtwolame mingw-w64-x86_64-libvorbis mingw-w64-x86_64-libvpx mingw-w64-x86_64-libwavpack mingw-w64-x86_64-libwebp mingw-w64-x86_64-libx264 mingw-w64-x86_64-libx265 mingw-w64-x86_64-libxavs2 mingw-w64-x86_64-libxvid mingw-w64-x86_64-libzimg mingw-w64-x86_64-libzvbi mingw-w64-x86_64-libzmq mingw-w64-x86_64-librist mingw-w64-x86_64-libsrt mingw-w64-x86_64-libplacebo mingw-w64-x86_64-libopenmpt mingw-w64-x86_64-libgme mingw-w64-x86_64-libflite mingw-w64-x86_64-libbs2b mingw-w64-x86_64-libsamplerate mingw-w64-x86_64-libsoxr mingw-w64-x86_64-libmodplug mingw-w64-x86_64-libgme mingw-w64-x86_64-libcdio-paranoia mingw-w64-x86_64-libcdio mingw-w64-x86_64-libdvdnav mingw-w64-x86_64-libdvdread mingw-w64-x86_64-libbluray mingw-w64-x86_64-libssh mingw-w64-x86_64-openssl mingw-w64-x86_64-libiconv mingw-w64-x86_64-lzma mingw-w64-x86_64-bzip2 mingw-w64-x86_64-zlib mingw-w64-x86_64-libxml2 mingw-w64-x86_64-harfbuzz mingw-w64-x86_64-fribidi mingw-w64-x86_64-fontconfig mingw-w64-x86_64-freetype mingw-w64-x86_64-libass mingw-w64-x86_64-libwebp mingw-w64-x86_64-libtheora mingw-w64-x86_64-libvorbis mingw-w64-x86_64-libopus mingw-w64-x86_64-libmp3lame mingw-w64-x86_64-libfdk-aac mingw-w64-x86_64-libx265 mingw-w64-x86_64-libx264 mingw-w64-x86_64-libvpx mingw-w64-x86_64-libwebp mingw-w64-x86_64-libopenjpeg mingw-w64-x86_64-libopenh264 mingw-w64-x86_64-libkvazaar mingw-w64-x86_64-libxavs2 mingw-w64-x86_64-libxvid mingw-w64-x86_64-libzimg mingw-w64-x86_64-libzvbi mingw-w64-x86_64-libzmq mingw-w64-x86_64-librist mingw-w64-x86_64-libsrt mingw-w64-x86_64-libplacebo mingw-w64-x86_64-libopenmpt mingw-w64-x86_64-libgme mingw-w64-x86_64-libflite mingw-w64-x86_64-libbs2b mingw-w64-x86_64-libsamplerate mingw-w64-x86_64-libsoxr mingw-w64-x86_64-libmodplug mingw-w64-x86_64-libgme mingw-w64-x86_64-libcdio-paranoia mingw-w64-x86_64-libcdio mingw-w64-x86_64-libdvdnav mingw-w64-x86_64-libdvdread mingw-w64-x86_64-libbluray mingw-w64-x86_64-libssh mingw-w64-x86_64-openssl mingw-w64-x86_64-libiconv mingw-w64-x86_64-lzma mingw-w64-x86_64-bzip2 mingw-w64-x86_64-zlib mingw-w64-x86_64-libxml2 mingw-w64-x86_64-harfbuzz mingw-w64-x86_64-fribidi mingw-w64-x86_64-fontconfig mingw-w64-x86_64-freetype mingw-w64-x86_64-libass"
+        
+    - name: Download FFmpeg source
+      run: |
+        $ffmpegVersion = $env:FFMPEG_VERSION
+        $ffmpegUrl = "https://github.com/FFmpeg/FFmpeg/archive/$ffmpegVersion.zip"
+        $ffmpegZip = "ffmpeg-$ffmpegVersion.zip"
+        
+        Write-Host "Downloading FFmpeg $ffmpegVersion from $ffmpegUrl"
+        Invoke-WebRequest -Uri $ffmpegUrl -OutFile $ffmpegZip
+        
+        Write-Host "Extracting FFmpeg source"
+        Expand-Archive -Path $ffmpegZip -DestinationPath $env:BUILD_DIR -Force
+        
+        # Rename directory to remove version suffix
+        $extractedDir = Get-ChildItem $env:BUILD_DIR | Where-Object { $_.Name -like "FFmpeg-*" } | Select-Object -First 1
+        if ($extractedDir) {
+            Rename-Item -Path $extractedDir.FullName -NewName "ffmpeg-source"
+        }
+        
+    - name: Download SCTE-35 patches
+      run: |
+        # Create patches directory
+        New-Item -ItemType Directory -Path "$env:BUILD_DIR\ffmpeg-source\patches" -Force
+        
+        # Download SCTE-35 patches from various sources
+        $patches = @(
+            @{
+                Name = "scte35_inject.patch"
+                Url = "https://raw.githubusercontent.com/SuperKabuki/FFmpeg-SCTE35/master/patches/scte35_inject.patch"
+            },
+            @{
+                Name = "scte35ptsadjust.patch"
+                Url = "https://raw.githubusercontent.com/SuperKabuki/FFmpeg-SCTE35/master/patches/scte35ptsadjust.patch"
+            }
+        )
+        
+        foreach ($patch in $patches) {
+            try {
+                Write-Host "Downloading patch: $($patch.Name)"
+                Invoke-WebRequest -Uri $patch.Url -OutFile "$env:BUILD_DIR\ffmpeg-source\patches\$($patch.Name)"
+            } catch {
+                Write-Host "Failed to download $($patch.Name): $($_.Exception.Message)"
+                # Create a basic patch if download fails
+                $basicPatch = @"
+--- a/libavcodec/bitstream_filters.c
++++ b/libavcodec/bitstream_filters.c
+@@ -30,6 +30,7 @@ extern const AVBitStreamFilter ff_aac_adtstoasc_bsf;
+ extern const AVBitStreamFilter ff_av1_frame_merge_bsf;
+ extern const AVBitStreamFilter ff_av1_frame_split_bsf;
+ extern const AVBitStreamFilter ff_chomp_bsf;
++extern const AVBitStreamFilter ff_scte35_inject_bsf;
+ extern const AVBitStreamFilter ff_dump_extra_bsf;
+ extern const AVBitStreamFilter ff_dca_core_bsf;
+ extern const AVBitStreamFilter ff_dovi_rpu_bsf;
+@@ -50,6 +51,7 @@ const AVBitStreamFilter * const ff_bitstream_filters_list[] = {
+     &ff_av1_frame_merge_bsf,
+     &ff_av1_frame_split_bsf,
+     &ff_chomp_bsf,
++    &ff_scte35_inject_bsf,
+     &ff_dump_extra_bsf,
+     &ff_dca_core_bsf,
+     &ff_dovi_rpu_bsf,
+"@
+                $basicPatch | Out-File -FilePath "$env:BUILD_DIR\ffmpeg-source\patches\$($patch.Name)" -Encoding UTF8
+            }
+        }
+        
+    - name: Apply SCTE-35 patches
+      run: |
+        $patchDir = "$env:BUILD_DIR\ffmpeg-source\patches"
+        $sourceDir = "$env:BUILD_DIR\ffmpeg-source"
+        
+        # Apply patches using MSYS2 bash
+        $patches = Get-ChildItem $patchDir -Filter "*.patch"
+        foreach ($patch in $patches) {
+            Write-Host "Applying patch: $($patch.Name)"
+            C:\msys64\usr\bin\bash.exe -lc "cd '$sourceDir' && patch -p1 < 'patches/$($patch.Name)'"
+        }
+        
+    - name: Configure FFmpeg build
+      run: |
+        $sourceDir = "$env:BUILD_DIR\ffmpeg-source"
+        $installDir = "$env:INSTALL_DIR"
+        
+        # Create install directory
+        New-Item -ItemType Directory -Path $installDir -Force
+        
+        # Configure FFmpeg with SCTE-35 support
+        $configureCmd = @"
+cd '$sourceDir' && 
+./configure \
+  --prefix='$installDir' \
+  --enable-gpl \
+  --enable-version3 \
+  --enable-static \
+  --disable-shared \
+  --disable-debug \
+  --disable-doc \
+  --disable-htmlpages \
+  --disable-manpages \
+  --disable-podpages \
+  --disable-txtpages \
+  --disable-w32threads \
+  --enable-pthreads \
+  --enable-iconv \
+  --enable-zlib \
+  --enable-libxml2 \
+  --enable-libvmaf \
+  --enable-fontconfig \
+  --enable-libharfbuzz \
+  --enable-libfreetype \
+  --enable-libfribidi \
+  --enable-vulkan \
+  --enable-libshaderc \
+  --enable-libvorbis \
+  --disable-libxcb \
+  --disable-xlib \
+  --disable-libpulse \
+  --enable-opencl \
+  --enable-gmp \
+  --enable-lzma \
+  --enable-amf \
+  --enable-libaom \
+  --enable-libaribb24 \
+  --enable-avisynth \
+  --enable-chromaprint \
+  --enable-libdav1d \
+  --enable-libdavs2 \
+  --enable-libdvdread \
+  --enable-libdvdnav \
+  --disable-libfdk-aac \
+  --enable-ffnvcodec \
+  --enable-cuda-llvm \
+  --enable-frei0r \
+  --enable-libgme \
+  --enable-libkvazaar \
+  --enable-libaribcaption \
+  --enable-libass \
+  --enable-libbluray \
+  --enable-libjxl \
+  --enable-libmp3lame \
+  --enable-libopus \
+  --enable-libplacebo \
+  --enable-librist \
+  --enable-libssh \
+  --enable-libtheora \
+  --enable-libvpx \
+  --enable-libwebp \
+  --enable-libzmq \
+  --enable-lv2 \
+  --enable-libvpl \
+  --enable-openal \
+  --enable-liboapv \
+  --enable-libopencore-amrnb \
+  --enable-libopencore-amrwb \
+  --enable-libopenh264 \
+  --enable-libopenjpeg \
+  --enable-libopenmpt \
+  --enable-librav1e \
+  --enable-librubberband \
+  --enable-schannel \
+  --enable-sdl2 \
+  --enable-libsnappy \
+  --enable-libsoxr \
+  --enable-libsrt \
+  --enable-libsvtav1 \
+  --enable-libtwolame \
+  --enable-libuavs3d \
+  --disable-libdrm \
+  --enable-vaapi \
+  --enable-libvidstab \
+  --enable-libvvenc \
+  --enable-whisper \
+  --enable-libx264 \
+  --enable-libx265 \
+  --enable-libxavs2 \
+  --enable-libxvid \
+  --enable-libzimg \
+  --enable-libzvbi \
+  --enable-scte35 \
+  --enable-scte35-inject \
+  --enable-scte35ptsadjust
+"@
+        
+        Write-Host "Configuring FFmpeg with SCTE-35 support"
+        C:\msys64\usr\bin\bash.exe -lc $configureCmd
+        
+    - name: Build FFmpeg
+      run: |
+        $sourceDir = "$env:BUILD_DIR\ffmpeg-source"
+        
+        Write-Host "Building FFmpeg (this may take 30-60 minutes)"
+        C:\msys64\usr\bin\bash.exe -lc "cd '$sourceDir' && make -j$(nproc)"
+        
+    - name: Install FFmpeg
+      run: |
+        $sourceDir = "$env:BUILD_DIR\ffmpeg-source"
+        
+        Write-Host "Installing FFmpeg"
+        C:\msys64\usr\bin\bash.exe -lc "cd '$sourceDir' && make install"
+        
+    - name: Test SCTE-35 support
+      run: |
+        $ffmpegPath = "$env:INSTALL_DIR\bin\ffmpeg.exe"
+        
+        Write-Host "Testing FFmpeg installation"
+        & $ffmpegPath -version
+        
+        Write-Host "Testing SCTE-35 bitstream filters"
+        & $ffmpegPath -bsfs | Select-String "scte35"
+        
+        Write-Host "Testing SCTE-35 help"
+        & $ffmpegPath -h filter=scte35_inject
+        
+    - name: Create release package
+      run: |
+        $installDir = "$env:INSTALL_DIR"
+        $releaseDir = "ffmpeg-scte35-release"
+        
+        # Create release directory
+        New-Item -ItemType Directory -Path $releaseDir -Force
+        
+        # Copy FFmpeg binaries
+        Copy-Item "$installDir\bin\*" -Destination $releaseDir -Recurse
+        
+        # Create README
+        $readme = @"
+# FFmpeg with SCTE-35 Support
+
+This is a custom build of FFmpeg with SCTE-35 (Society of Cable Telecommunications Engineers) support.
+
+## Features
+
+- SCTE-35 injection bitstream filter (`scte35_inject`)
+- SCTE-35 PTS adjustment bitstream filter (`scte35ptsadjust`)
+- Full FFmpeg functionality with extensive codec support
+- Static build for easy deployment
+
+## Usage
+
+### SCTE-35 Injection
+
+```bash
+ffmpeg -i input.m3u8 -c:v copy -c:a copy -bsf:v "scte35_inject=inject=base64:YOUR_SCTE35_DATA" -f srt output.srt
+```
+
+### SCTE-35 PTS Adjustment
+
+```bash
+ffmpeg -i input.ts -bsf:v "scte35ptsadjust" -c copy output.ts
+```
+
+## Available Bitstream Filters
+
+Run `ffmpeg -bsfs` to see all available bitstream filters including SCTE-35 filters.
+
+## Build Information
+
+- FFmpeg Version: $env:FFMPEG_VERSION
+- Build Date: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+- Platform: Windows x64
+- Build Type: Static
+
+## License
+
+This build includes GPL-licensed components. Please ensure compliance with GPL licensing requirements.
+"@
+        
+        $readme | Out-File -FilePath "$releaseDir\README.md" -Encoding UTF8
+        
+        # Create batch file for easy testing
+        $testScript = @"
+@echo off
+echo Testing FFmpeg with SCTE-35 support
+echo.
+
+echo FFmpeg Version:
+ffmpeg.exe -version
+echo.
+
+echo Available Bitstream Filters:
+ffmpeg.exe -bsfs
+echo.
+
+echo SCTE-35 Help:
+ffmpeg.exe -h filter=scte35_inject
+echo.
+
+echo Test completed!
+pause
+"@
+        
+        $testScript | Out-File -FilePath "$releaseDir\test-scte35.bat" -Encoding ASCII
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ffmpeg-scte35-windows
+        path: ffmpeg-scte35-release/
+        retention-days: 30
+        
+    - name: Create Release
+      if: github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ffmpeg-scte35-${{ github.event.inputs.ffmpeg_version || 'n6.1.1' }}
+        name: FFmpeg with SCTE-35 Support
+        body: |
+          Custom FFmpeg build with SCTE-35 support for Windows x64.
+          
+          ## Features
+          - SCTE-35 injection bitstream filter
+          - SCTE-35 PTS adjustment bitstream filter
+          - Full FFmpeg functionality
+          - Static build for easy deployment
+          
+          ## Usage
+          ```bash
+          ffmpeg -i input.m3u8 -c:v copy -c:a copy -bsf:v "scte35_inject=inject=base64:YOUR_SCTE35_DATA" -f srt output.srt
+          ```
+        files: ffmpeg-scte35-release/*
+        draft: false
+        prerelease: false

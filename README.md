@@ -23,17 +23,17 @@ A professional-grade SCTE-35 stream injection system with real-time monitoring, 
 
 ### Installation
 
-```bash
+   ```bash
 # Clone the repository
 git clone https://github.com/shihan84/scte-final.git
 cd scte-final
 
 # Install dependencies
-npm install
+   npm install
 
 # Start the development server
-npm run dev
-```
+   npm run dev
+   ```
 
 Visit `http://localhost:3000` to access the dashboard.
 

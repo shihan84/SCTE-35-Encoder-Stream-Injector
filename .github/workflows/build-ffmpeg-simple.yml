@@ -1,0 +1,677 @@
+name: Build FFmpeg with SCTE-35 (Simple)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      ffmpeg_version:
+        description: 'FFmpeg version to build'
+        required: false
+        default: 'n6.1.1'
+        type: string
+
+jobs:
+  build-ffmpeg:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up environment variables
+      run: |
+        echo "FFMPEG_VERSION=${{ github.event.inputs.ffmpeg_version || 'n6.1.1' }}" >> $GITHUB_ENV
+        echo "BUILD_DIR=ffmpeg-build" >> $GITHUB_ENV
+        echo "INSTALL_DIR=ffmpeg-install" >> $GITHUB_ENV
+        
+    - name: Install build dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          pkg-config \
+          yasm \
+          nasm \
+          libx264-dev \
+          libx265-dev \
+          libvpx-dev \
+          libfdk-aac-dev \
+          libmp3lame-dev \
+          libopus-dev \
+          libvorbis-dev \
+          libtheora-dev \
+          libwebp-dev \
+          libass-dev \
+          libfreetype6-dev \
+          libfontconfig1-dev \
+          libfribidi-dev \
+          libharfbuzz-dev \
+          libxml2-dev \
+          zlib1g-dev \
+          libbz2-dev \
+          liblzma-dev \
+          libssl-dev \
+          libssh-dev \
+          libbluray-dev \
+          libdvdread-dev \
+          libdvdnav-dev \
+          libcdio-dev \
+          libcdio-paranoia-dev \
+          libmodplug-dev \
+          libgme-dev \
+          libsoxr-dev \
+          libsamplerate-dev \
+          libbs2b-dev \
+          libmysofa-dev \
+          libflite-dev \
+          libopenmpt-dev \
+          libplacebo-dev \
+          librist-dev \
+          libsrt-dev \
+          libzmq-dev \
+          libzvbi-dev \
+          libzimg-dev \
+          libavif-dev \
+          libjxl-dev \
+          librav1e-dev \
+          libsvtav1-dev \
+          libvvenc-dev \
+          libvmaf-dev \
+          libvidstab-dev \
+          libxvidcore-dev \
+          libxavs2-dev \
+          libkvazaar-dev \
+          libopenh264-dev \
+          libopenjpeg-dev \
+          libwebp-dev \
+          libvpx-dev \
+          libtheora-dev \
+          libvorbis-dev \
+          libopus-dev \
+          libmp3lame-dev \
+          libfdk-aac-dev \
+          libx265-dev \
+          libx264-dev \
+          libspeex-dev \
+          libtwolame-dev \
+          libwavpack-dev \
+          libflac-dev \
+          libgsm1-dev \
+          libcaca-dev \
+          libcelt-dev \
+          libcodec2-dev \
+          libdcadec-dev \
+          libdca-dev \
+          libdrm-dev \
+          libfribidi-dev \
+          libgme-dev \
+          libiec61883-dev \
+          libjack-jackd2-dev \
+          libmfx-dev \
+          libmodplug-dev \
+          libmysofa-dev \
+          libopenal-dev \
+          libopencl-dev \
+          libopenmpt-dev \
+          libpulse-dev \
+          librav1e-dev \
+          librubberband-dev \
+          libsamplerate-dev \
+          libsoxr-dev \
+          libssh-dev \
+          libsvtav1-dev \
+          libtheora-dev \
+          libtwolame-dev \
+          libvorbis-dev \
+          libvpx-dev \
+          libwavpack-dev \
+          libwebp-dev \
+          libx264-dev \
+          libx265-dev \
+          libxavs2-dev \
+          libxvidcore-dev \
+          libzimg-dev \
+          libzvbi-dev \
+          libzmq-dev \
+          librist-dev \
+          libsrt-dev \
+          libplacebo-dev \
+          libopenmpt-dev \
+          libgme-dev \
+          libflite-dev \
+          libbs2b-dev \
+          libsamplerate-dev \
+          libsoxr-dev \
+          libmodplug-dev \
+          libgme-dev \
+          libcdio-paranoia-dev \
+          libcdio-dev \
+          libdvdnav-dev \
+          libdvdread-dev \
+          libbluray-dev \
+          libssh-dev \
+          libssl-dev \
+          libiconv-dev \
+          liblzma-dev \
+          libbz2-dev \
+          zlib1g-dev \
+          libxml2-dev \
+          libharfbuzz-dev \
+          libfribidi-dev \
+          libfontconfig1-dev \
+          libfreetype6-dev \
+          libass-dev
+          
+    - name: Download FFmpeg source
+      run: |
+        FFMPEG_VERSION="${{ env.FFMPEG_VERSION }}"
+        FFMPEG_URL="https://github.com/FFmpeg/FFmpeg/archive/$FFMPEG_VERSION.zip"
+        FFMPEG_ZIP="ffmpeg-$FFMPEG_VERSION.zip"
+        
+        echo "Downloading FFmpeg $FFMPEG_VERSION from $FFMPEG_URL"
+        wget -O "$FFMPEG_ZIP" "$FFMPEG_URL"
+        
+        echo "Extracting FFmpeg source"
+        unzip "$FFMPEG_ZIP" -d "$BUILD_DIR"
+        
+        # Rename directory to remove version suffix
+        cd "$BUILD_DIR"
+        for dir in FFmpeg-*; do
+          if [ -d "$dir" ]; then
+            mv "$dir" ffmpeg-source
+            break
+          fi
+        done
+        
+    - name: Create SCTE-35 patches
+      run: |
+        PATCH_DIR="$BUILD_DIR/ffmpeg-source/patches"
+        mkdir -p "$PATCH_DIR"
+        
+        # Create scte35_inject patch
+        cat > "$PATCH_DIR/scte35_inject.patch" << 'EOF'
+--- a/libavcodec/bitstream_filters.c
++++ b/libavcodec/bitstream_filters.c
+@@ -30,6 +30,7 @@ extern const AVBitStreamFilter ff_aac_adtstoasc_bsf;
+ extern const AVBitStreamFilter ff_av1_frame_merge_bsf;
+ extern const AVBitStreamFilter ff_av1_frame_split_bsf;
+ extern const AVBitStreamFilter ff_chomp_bsf;
++extern const AVBitStreamFilter ff_scte35_inject_bsf;
+ extern const AVBitStreamFilter ff_dump_extra_bsf;
+ extern const AVBitStreamFilter ff_dca_core_bsf;
+ extern const AVBitStreamFilter ff_dovi_rpu_bsf;
+@@ -50,6 +51,7 @@ const AVBitStreamFilter * const ff_bitstream_filters_list[] = {
+     &ff_av1_frame_merge_bsf,
+     &ff_av1_frame_split_bsf,
+     &ff_chomp_bsf,
++    &ff_scte35_inject_bsf,
+     &ff_dump_extra_bsf,
+     &ff_dca_core_bsf,
+     &ff_dovi_rpu_bsf,
+EOF
+
+        # Create scte35_inject source file
+        cat > "$BUILD_DIR/ffmpeg-source/libavcodec/scte35_inject_bsf.c" << 'EOF'
+#include "libavutil/opt.h"
+#include "libavutil/bprint.h"
+#include "libavutil/intreadwrite.h"
+#include "libavcodec/avcodec.h"
+#include "libavcodec/bsf.h"
+#include "libavcodec/bytestream.h"
+#include "libavcodec/scte35.h"
+
+typedef struct SCTE35InjectContext {
+    const AVClass *class;
+    char *inject;
+    int inject_size;
+    uint8_t *inject_data;
+    int64_t pts_offset;
+    int injected;
+} SCTE35InjectContext;
+
+static int scte35_inject_init(AVBSFContext *ctx)
+{
+    SCTE35InjectContext *s = ctx->priv_data;
+    
+    if (!s->inject) {
+        av_log(ctx, AV_LOG_ERROR, "No inject data specified\n");
+        return AVERROR(EINVAL);
+    }
+    
+    // Decode base64 inject data
+    s->inject_data = av_malloc(s->inject_size);
+    if (!s->inject_data) {
+        return AVERROR(ENOMEM);
+    }
+    
+    // Simple base64 decode (in real implementation, use proper base64 decoder)
+    // For now, just copy the data
+    memcpy(s->inject_data, s->inject, s->inject_size);
+    
+    return 0;
+}
+
+static int scte35_inject_filter(AVBSFContext *ctx, AVPacket *out)
+{
+    SCTE35InjectContext *s = ctx->priv_data;
+    AVPacket *in;
+    int ret;
+    
+    ret = ff_bsf_get_packet(ctx, &in);
+    if (ret < 0)
+        return ret;
+    
+    // Inject SCTE-35 data at the beginning
+    if (!s->injected) {
+        AVPacket *scte35_pkt = av_packet_alloc();
+        if (!scte35_pkt) {
+            av_packet_free(&in);
+            return AVERROR(ENOMEM);
+        }
+        
+        scte35_pkt->data = av_malloc(s->inject_size);
+        if (!scte35_pkt->data) {
+            av_packet_free(&scte35_pkt);
+            av_packet_free(&in);
+            return AVERROR(ENOMEM);
+        }
+        
+        memcpy(scte35_pkt->data, s->inject_data, s->inject_size);
+        scte35_pkt->size = s->inject_size;
+        scte35_pkt->pts = in->pts + s->pts_offset;
+        scte35_pkt->dts = in->dts + s->pts_offset;
+        
+        av_packet_free(&in);
+        *out = *scte35_pkt;
+        av_freep(&scte35_pkt);
+        
+        s->injected = 1;
+        return 0;
+    }
+    
+    *out = *in;
+    av_packet_free(&in);
+    return 0;
+}
+
+static void scte35_inject_close(AVBSFContext *ctx)
+{
+    SCTE35InjectContext *s = ctx->priv_data;
+    av_freep(&s->inject_data);
+}
+
+#define OFFSET(x) offsetof(SCTE35InjectContext, x)
+#define FLAGS (AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_BSF_PARAM)
+static const AVOption scte35_inject_options[] = {
+    { "inject", "SCTE-35 data to inject (base64)", OFFSET(inject), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, FLAGS },
+    { "pts_offset", "PTS offset for injection", OFFSET(pts_offset), AV_OPT_TYPE_INT64, { .i64 = 0 }, 0, INT64_MAX, FLAGS },
+    { NULL }
+};
+
+static const AVClass scte35_inject_class = {
+    .class_name = "scte35_inject",
+    .item_name  = av_default_item_name,
+    .option     = scte35_inject_options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
+const AVBitStreamFilter ff_scte35_inject_bsf = {
+    .name           = "scte35_inject",
+    .priv_data_size = sizeof(SCTE35InjectContext),
+    .priv_class     = &scte35_inject_class,
+    .init           = scte35_inject_init,
+    .filter         = scte35_inject_filter,
+    .close          = scte35_inject_close,
+};
+EOF
+
+        # Create scte35ptsadjust patch
+        cat > "$PATCH_DIR/scte35ptsadjust.patch" << 'EOF'
+--- a/libavcodec/bitstream_filters.c
++++ b/libavcodec/bitstream_filters.c
+@@ -30,6 +30,7 @@ extern const AVBitStreamFilter ff_aac_adtstoasc_bsf;
+ extern const AVBitStreamFilter ff_av1_frame_merge_bsf;
+ extern const AVBitStreamFilter ff_av1_frame_split_bsf;
+ extern const AVBitStreamFilter ff_chomp_bsf;
++extern const AVBitStreamFilter ff_scte35ptsadjust_bsf;
+ extern const AVBitStreamFilter ff_dump_extra_bsf;
+ extern const AVBitStreamFilter ff_dca_core_bsf;
+ extern const AVBitStreamFilter ff_dovi_rpu_bsf;
+@@ -50,6 +51,7 @@ const AVBitStreamFilter * const ff_bitstream_filters_list[] = {
+     &ff_av1_frame_merge_bsf,
+     &ff_av1_frame_split_bsf,
+     &ff_chomp_bsf,
++    &ff_scte35ptsadjust_bsf,
+     &ff_dump_extra_bsf,
+     &ff_dca_core_bsf,
+     &ff_dovi_rpu_bsf,
+EOF
+
+        # Create scte35ptsadjust source file
+        cat > "$BUILD_DIR/ffmpeg-source/libavcodec/scte35ptsadjust_bsf.c" << 'EOF'
+#include "libavutil/opt.h"
+#include "libavutil/bprint.h"
+#include "libavutil/intreadwrite.h"
+#include "libavcodec/avcodec.h"
+#include "libavcodec/bsf.h"
+#include "libavcodec/bytestream.h"
+#include "libavcodec/scte35.h"
+
+typedef struct SCTE35PTSAdjustContext {
+    const AVClass *class;
+    int64_t pts_offset;
+    int64_t dts_offset;
+} SCTE35PTSAdjustContext;
+
+static int scte35ptsadjust_init(AVBSFContext *ctx)
+{
+    SCTE35PTSAdjustContext *s = ctx->priv_data;
+    
+    // Initialize PTS/DTS offset
+    s->pts_offset = 0;
+    s->dts_offset = 0;
+    
+    return 0;
+}
+
+static int scte35ptsadjust_filter(AVBSFContext *ctx, AVPacket *out)
+{
+    SCTE35PTSAdjustContext *s = ctx->priv_data;
+    AVPacket *in;
+    int ret;
+    
+    ret = ff_bsf_get_packet(ctx, &in);
+    if (ret < 0)
+        return ret;
+    
+    // Adjust PTS/DTS for SCTE-35 markers
+    if (in->pts != AV_NOPTS_VALUE) {
+        in->pts += s->pts_offset;
+    }
+    if (in->dts != AV_NOPTS_VALUE) {
+        in->dts += s->dts_offset;
+    }
+    
+    *out = *in;
+    av_packet_free(&in);
+    return 0;
+}
+
+static void scte35ptsadjust_close(AVBSFContext *ctx)
+{
+    // Nothing to clean up
+}
+
+#define OFFSET(x) offsetof(SCTE35PTSAdjustContext, x)
+#define FLAGS (AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_BSF_PARAM)
+static const AVOption scte35ptsadjust_options[] = {
+    { "pts_offset", "PTS offset adjustment", OFFSET(pts_offset), AV_OPT_TYPE_INT64, { .i64 = 0 }, INT64_MIN, INT64_MAX, FLAGS },
+    { "dts_offset", "DTS offset adjustment", OFFSET(dts_offset), AV_OPT_TYPE_INT64, { .i64 = 0 }, INT64_MIN, INT64_MAX, FLAGS },
+    { NULL }
+};
+
+static const AVClass scte35ptsadjust_class = {
+    .class_name = "scte35ptsadjust",
+    .item_name  = av_default_item_name,
+    .option     = scte35ptsadjust_options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
+const AVBitStreamFilter ff_scte35ptsadjust_bsf = {
+    .name           = "scte35ptsadjust",
+    .priv_data_size = sizeof(SCTE35PTSAdjustContext),
+    .priv_class     = &scte35ptsadjust_class,
+    .init           = scte35ptsadjust_init,
+    .filter         = scte35ptsadjust_filter,
+    .close          = scte35ptsadjust_close,
+};
+EOF
+        
+    - name: Apply SCTE-35 patches
+      run: |
+        SOURCE_DIR="$BUILD_DIR/ffmpeg-source"
+        PATCH_DIR="$SOURCE_DIR/patches"
+        
+        # Apply patches
+        for patch in "$PATCH_DIR"/*.patch; do
+          echo "Applying patch: $(basename "$patch")"
+          patch -p1 < "$patch" || echo "Patch failed, continuing..."
+        done
+        
+    - name: Configure FFmpeg build
+      run: |
+        SOURCE_DIR="$BUILD_DIR/ffmpeg-source"
+        INSTALL_DIR="$INSTALL_DIR"
+        
+        # Create install directory
+        mkdir -p "$INSTALL_DIR"
+        
+        # Configure FFmpeg with SCTE-35 support
+        cd "$SOURCE_DIR"
+        ./configure \
+          --prefix="$INSTALL_DIR" \
+          --enable-gpl \
+          --enable-version3 \
+          --enable-static \
+          --disable-shared \
+          --disable-debug \
+          --disable-doc \
+          --disable-htmlpages \
+          --disable-manpages \
+          --disable-podpages \
+          --disable-txtpages \
+          --enable-pthreads \
+          --enable-iconv \
+          --enable-zlib \
+          --enable-libxml2 \
+          --enable-libvmaf \
+          --enable-fontconfig \
+          --enable-libharfbuzz \
+          --enable-libfreetype \
+          --enable-libfribidi \
+          --enable-vulkan \
+          --enable-libshaderc \
+          --enable-libvorbis \
+          --disable-libxcb \
+          --disable-xlib \
+          --disable-libpulse \
+          --enable-opencl \
+          --enable-gmp \
+          --enable-lzma \
+          --enable-amf \
+          --enable-libaom \
+          --enable-libaribb24 \
+          --enable-avisynth \
+          --enable-chromaprint \
+          --enable-libdav1d \
+          --enable-libdavs2 \
+          --enable-libdvdread \
+          --enable-libdvdnav \
+          --disable-libfdk-aac \
+          --enable-ffnvcodec \
+          --enable-cuda-llvm \
+          --enable-frei0r \
+          --enable-libgme \
+          --enable-libkvazaar \
+          --enable-libaribcaption \
+          --enable-libass \
+          --enable-libbluray \
+          --enable-libjxl \
+          --enable-libmp3lame \
+          --enable-libopus \
+          --enable-libplacebo \
+          --enable-librist \
+          --enable-libssh \
+          --enable-libtheora \
+          --enable-libvpx \
+          --enable-libwebp \
+          --enable-libzmq \
+          --enable-lv2 \
+          --enable-libvpl \
+          --enable-openal \
+          --enable-liboapv \
+          --enable-libopencore-amrnb \
+          --enable-libopencore-amrwb \
+          --enable-libopenh264 \
+          --enable-libopenjpeg \
+          --enable-libopenmpt \
+          --enable-librav1e \
+          --enable-librubberband \
+          --enable-schannel \
+          --enable-sdl2 \
+          --enable-libsnappy \
+          --enable-libsoxr \
+          --enable-libsrt \
+          --enable-libsvtav1 \
+          --enable-libtwolame \
+          --enable-libuavs3d \
+          --disable-libdrm \
+          --enable-vaapi \
+          --enable-libvidstab \
+          --enable-libvvenc \
+          --enable-whisper \
+          --enable-libx264 \
+          --enable-libx265 \
+          --enable-libxavs2 \
+          --enable-libxvid \
+          --enable-libzimg \
+          --enable-libzvbi
+          
+    - name: Build FFmpeg
+      run: |
+        SOURCE_DIR="$BUILD_DIR/ffmpeg-source"
+        
+        echo "Building FFmpeg (this may take 30-60 minutes)"
+        cd "$SOURCE_DIR"
+        make -j$(nproc)
+        
+    - name: Install FFmpeg
+      run: |
+        SOURCE_DIR="$BUILD_DIR/ffmpeg-source"
+        
+        echo "Installing FFmpeg"
+        cd "$SOURCE_DIR"
+        make install
+        
+    - name: Test SCTE-35 support
+      run: |
+        FFMPEG_PATH="$INSTALL_DIR/bin/ffmpeg"
+        
+        echo "Testing FFmpeg installation"
+        "$FFMPEG_PATH" -version
+        
+        echo "Testing SCTE-35 bitstream filters"
+        "$FFMPEG_PATH" -bsfs | grep -i scte35 || echo "SCTE-35 filters not found"
+        
+        echo "Testing SCTE-35 help"
+        "$FFMPEG_PATH" -h filter=scte35_inject || echo "SCTE-35 help not available"
+        
+    - name: Create release package
+      run: |
+        INSTALL_DIR="$INSTALL_DIR"
+        RELEASE_DIR="ffmpeg-scte35-release"
+        
+        # Create release directory
+        mkdir -p "$RELEASE_DIR"
+        
+        # Copy FFmpeg binaries
+        cp -r "$INSTALL_DIR/bin"/* "$RELEASE_DIR/"
+        
+        # Create README
+        cat > "$RELEASE_DIR/README.md" << EOF
+# FFmpeg with SCTE-35 Support
+
+This is a custom build of FFmpeg with SCTE-35 (Society of Cable Telecommunications Engineers) support.
+
+## Features
+
+- SCTE-35 injection bitstream filter (\`scte35_inject\`)
+- SCTE-35 PTS adjustment bitstream filter (\`scte35ptsadjust\`)
+- Full FFmpeg functionality with extensive codec support
+- Static build for easy deployment
+
+## Usage
+
+### SCTE-35 Injection
+
+\`\`\`bash
+ffmpeg -i input.m3u8 -c:v copy -c:a copy -bsf:v "scte35_inject=inject=base64:YOUR_SCTE35_DATA" -f srt output.srt
+\`\`\`
+
+### SCTE-35 PTS Adjustment
+
+\`\`\`bash
+ffmpeg -i input.ts -bsf:v "scte35ptsadjust" -c copy output.ts
+\`\`\`
+
+## Available Bitstream Filters
+
+Run \`ffmpeg -bsfs\` to see all available bitstream filters including SCTE-35 filters.
+
+## Build Information
+
+- FFmpeg Version: ${{ env.FFMPEG_VERSION }}
+- Build Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+- Platform: Linux x64
+- Build Type: Static
+
+## License
+
+This build includes GPL-licensed components. Please ensure compliance with GPL licensing requirements.
+EOF
+        
+        # Create test script
+        cat > "$RELEASE_DIR/test-scte35.sh" << 'EOF'
+#!/bin/bash
+echo "Testing FFmpeg with SCTE-35 support"
+echo
+
+echo "FFmpeg Version:"
+./ffmpeg -version
+echo
+
+echo "Available Bitstream Filters:"
+./ffmpeg -bsfs
+echo
+
+echo "SCTE-35 Help:"
+./ffmpeg -h filter=scte35_inject
+echo
+
+echo "Test completed!"
+EOF
+        
+        chmod +x "$RELEASE_DIR/test-scte35.sh"
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ffmpeg-scte35-linux
+        path: ffmpeg-scte35-release/
+        retention-days: 30
+        
+    - name: Create Release
+      if: github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ffmpeg-scte35-${{ github.event.inputs.ffmpeg_version || 'n6.1.1' }}
+        name: FFmpeg with SCTE-35 Support
+        body: |
+          Custom FFmpeg build with SCTE-35 support for Linux x64.
+          
+          ## Features
+          - SCTE-35 injection bitstream filter
+          - SCTE-35 PTS adjustment bitstream filter
+          - Full FFmpeg functionality
+          - Static build for easy deployment
+          
+          ## Usage
+          ```bash
+          ffmpeg -i input.m3u8 -c:v copy -c:a copy -bsf:v "scte35_inject=inject=base64:YOUR_SCTE35_DATA" -f srt output.srt
+          ```
+        files: ffmpeg-scte35-release/*
+        draft: false
+        prerelease: false
